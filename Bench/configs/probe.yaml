@@ -10,7 +10,7 @@ cards_dir: data/cards
 variants_dir: data/variants_synthetic
 output_dir: runs/probe
 
-variants: [orig, en-synth, egy-synth, egy-franco-synth]
+variants: [orig, en-synth, egy-synth, egy-franco-synth, mag-synth, egy-messy-synth]
 reference_variant: en-synth
 runs_per_cell: 3
 

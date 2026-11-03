@@ -15,6 +15,17 @@ reference_variant: en-synth
 runs_per_cell: 3
 
 models:
+  # Anthropic API directly (ANTHROPIC_API_KEY). litellm prices it, so MSWEA_GLOBAL_COST_LIMIT works.
+  - name: haiku-5.5
+    model_name: claude-haiku-5-5
+    model_class: litellm
+  # OpenRouter free tier (zero reported cost; run with MSWEA_COST_TRACKING=ignore_errors).
+  - name: nemotron-3-ultra-free
+    model_name: nvidia/nemotron-3-ultra-550b-a55b:free
+    model_class: openrouter
+  - name: north-mini-code-free
+    model_name: cohere/north-mini-code:free
+    model_class: openrouter
   - name: sonnet-5.5
     model_name: anthropic/claude-sonnet-5.5
     model_class: openrouter

@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import base64
 import concurrent.futures
+import contextlib
 import json
 import logging
+import signal
 import subprocess
+import threading
 import time
 import traceback
 from dataclasses import asdict, dataclass
@@ -185,6 +188,44 @@ def remove_image(image: str) -> None:
     _docker("image", "rm", "-f", image, timeout=300)
 
 
+def image_prefix(cfg: ExperimentConfig) -> str:
+    return cfg.image_template.split("{instance_id}")[0]
+
+
+def prune_stale_images(cfg: ExperimentConfig, keep: set[str]) -> list[str]:
+    """Remove task images left behind by crashed or killed runs.
+
+    Uses ``docker image rm`` without ``-f`` so an image still used by a container
+    (for example by another runner process on the same machine) is left alone.
+    """
+    listing = _docker("images", "--format", "{{.Repository}}:{{.Tag}}", timeout=120)
+    if listing.returncode != 0:
+        return []
+    prefix = image_prefix(cfg)
+    stale = [name for name in listing.stdout.split() if name.startswith(prefix) and name not in keep]
+    removed = [name for name in stale if _docker("image", "rm", name, timeout=300).returncode == 0]
+    if removed:
+        log.info("Removed %d stale task image(s)", len(removed))
+    return removed
+
+
+@contextlib.contextmanager
+def _sigterm_as_interrupt():
+    """Turn SIGTERM into KeyboardInterrupt so `finally` blocks (image cleanup) run on `kill`."""
+    if threading.current_thread() is not threading.main_thread():
+        yield
+        return
+
+    def handler(signum, frame):
+        raise KeyboardInterrupt(f"signal {signum}")
+
+    previous = signal.signal(signal.SIGTERM, handler)
+    try:
+        yield
+    finally:
+        signal.signal(signal.SIGTERM, previous)
+
+
 def plan_cells(cfg: ExperimentConfig, instance_ids: list[str], models: list[str], variants: list[str], repeats: int) -> dict[str, list[Cell]]:
     return {
         iid: [Cell(iid, m, v, r) for m in models for v in variants for r in range(1, repeats + 1)]
@@ -213,6 +254,13 @@ def run_experiment(
 ) -> list[tuple[Cell, dict]]:
     plan = plan_cells(cfg, instance_ids, models, variants, repeats)
     results: list[tuple[Cell, dict]] = []
+    with _sigterm_as_interrupt():
+        _run_plan(cfg, instances, plan, results, workers=workers, redo=redo, on_cell_done=on_cell_done)
+    return results
+
+
+def _run_plan(cfg, instances, plan, results, *, workers, redo, on_cell_done) -> None:
+    pruned = not cfg.cleanup_images
     for index, (iid, cells) in enumerate(plan.items(), start=1):
         todo = [c for c in cells if redo or not cell_is_done(c, cfg)]
         log.info("[%d/%d] %s: %d/%d cells to run", index, len(plan), iid, len(todo), len(cells))
@@ -225,8 +273,11 @@ def run_experiment(
         texts = {v: problem_statement(v, instance, card, cfg.variants_path) for v in {c.variant for c in todo}}
 
         image = cfg.image_for(iid)
-        ensure_image(image)
+        if not pruned:
+            prune_stale_images(cfg, keep={image})
+            pruned = True
         try:
+            ensure_image(image)
             with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
                 futures = {pool.submit(process_cell, c, cfg, instance, texts[c.variant], redo=redo): c for c in todo}
                 for future in concurrent.futures.as_completed(futures):
@@ -242,4 +293,3 @@ def run_experiment(
         finally:
             if cfg.cleanup_images:
                 remove_image(image)
-    return results

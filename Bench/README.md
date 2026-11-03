@@ -62,6 +62,25 @@ dialect-tax report                       # rebuild runs/pilot/report.md
 and must come out `empty_patch`. If `gold` fails on a task, that task's environment is broken
 and should be dropped before spending money on it.
 
+## Synthetic probe (early signal, never published)
+
+`configs/probe.yaml` runs the same pipeline on model-written variants in
+`data/variants_synthetic/` (`en-synth`, `egy-synth`, `egy-franco-synth`), produced from the same
+writer view humans get (units, Arabic glosses, attachments; no original prose). The reference is
+`en-synth`, so all compared texts share one author. It answers one question cheaply: does the
+language of the request move resolve rates at all?
+
+Caveats: model-written dialect is cleaner and more standard than real developer text, and it was
+written by a model from the same family as one of the evaluated models. A tax here is a lower bound;
+no tax here is inconclusive. These files must never be imported into `data/variants/`.
+
+```bash
+dialect-tax validate -c configs/probe.yaml
+dialect-tax run -c configs/probe.yaml --variants orig,en-synth --limit 5 --repeats 1   # cost calibration
+dialect-tax estimate-cost -c configs/probe.yaml
+dialect-tax run -c configs/probe.yaml                                                   # full probe
+```
+
 ## Writers' web page
 
 `web/WriterApp.template.html` is built into `web/WriterApp.html` by

@@ -1,0 +1,35 @@
+# SYNTHETIC PROBE: model-written variants (data/variants_synthetic), for an early, unpublishable signal.
+# Every non-orig variant here is written by a language model from the same cards human writers use.
+name: probe
+dataset: SWE-bench/SWE-bench_Verified
+split: test
+image_template: "ghcr.io/epoch-research/swe-bench.eval.x86_64.{instance_id}:latest"
+
+tasks_file: data/pilot_tasks.json
+cards_dir: data/cards
+variants_dir: data/variants_synthetic
+output_dir: runs/probe
+
+variants: [orig, en-synth, egy-synth, egy-franco-synth]
+reference_variant: en-synth
+runs_per_cell: 3
+
+models:
+  - name: sonnet-5.5
+    model_name: anthropic/claude-sonnet-5.5
+    model_class: openrouter
+  - name: deepseek-v4.1-flash
+    model_name: deepseek/deepseek-v4.1-flash
+    model_class: openrouter
+
+agent:
+  step_limit: 100
+  cost_limit: 2.0
+  wall_time_seconds: 1800
+  command_timeout_seconds: 120
+
+eval:
+  timeout_seconds: 1800
+
+workers: 4
+cleanup_images: true

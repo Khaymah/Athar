@@ -21,6 +21,9 @@ LATIN_RE = re.compile(r"[A-Za-z]")
 # a minority of the characters in a perfectly natural dialect request.
 MIN_ARABIC_RATIO = 0.25
 
+# Model-written variants used only for the synthetic probe; never mixed with human data.
+SYNTHETIC_SUFFIX = "-synth"
+
 EXPECTED_SCRIPT = {
     "en": "latin",
     "msa": "arabic",
@@ -114,7 +117,7 @@ def validate_variant(variant: str, card: Card, variants_dir: Path) -> Validation
     if duplicated:
         result.warnings.append(f"placeholders used more than once: {duplicated}")
 
-    expected = EXPECTED_SCRIPT.get(variant)
+    expected = EXPECTED_SCRIPT.get(variant.removesuffix(SYNTHETIC_SUFFIX))
     ratio = arabic_ratio(prose)
     if expected == "arabic" and ratio < MIN_ARABIC_RATIO:
         result.errors.append(f"expected Arabic script, Arabic ratio is {ratio:.0%}")

@@ -19,13 +19,14 @@ models:
   - name: haiku-5.5
     model_name: claude-haiku-5-5
     model_class: litellm
-  # OpenRouter free tier (zero reported cost; run with MSWEA_COST_TRACKING=ignore_errors).
-  - name: nemotron-3-ultra-free
-    model_name: nvidia/nemotron-3-ultra-550b-a55b:free
-    model_class: openrouter
-  - name: north-mini-code-free
-    model_name: cohere/north-mini-code:free
-    model_class: openrouter
+  # OpenRouter free tier: dropped for now (key allows 50 free requests/day, about 1 agent run/day).
+  # To re-enable, uncomment and run with MSWEA_COST_TRACKING=ignore_errors.
+  # - name: nemotron-3-ultra-free
+  #   model_name: nvidia/nemotron-3-ultra-550b-a55b:free
+  #   model_class: openrouter
+  # - name: north-mini-code-free
+  #   model_name: cohere/north-mini-code:free
+  #   model_class: openrouter
   - name: sonnet-5.5
     model_name: anthropic/claude-sonnet-5.5
     model_class: openrouter

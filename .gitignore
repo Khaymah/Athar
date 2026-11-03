@@ -4,3 +4,4 @@ __pycache__/
 .pytest_cache/
 Bench/runs/
 Bench/logs/
+*.egg-info/

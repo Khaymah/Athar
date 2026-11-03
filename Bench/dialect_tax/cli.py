@@ -9,7 +9,7 @@ from pathlib import Path
 
 import typer
 
-from dialect_tax.analysis import build_report, load_rows
+from dialect_tax.analysis import build_report, filter_rows, load_rows
 from dialect_tax.cards import build_card, load_card, render_writer_sheet, save_card
 from dialect_tax.config import ORIGINAL_VARIANT, load_config
 from dialect_tax.tasks import load_instances, load_task_ids, save_tasks, select_pilot
@@ -142,13 +142,23 @@ def run(
 
 
 @app.command("report")
-def report(config: str = CONFIG, output: str = typer.Option(None), reference: str = typer.Option(None)):
+def report(
+    config: str = CONFIG,
+    output: str = typer.Option(None),
+    reference: str = typer.Option(None),
+    only_tasks: str = typer.Option(None, help="File with one instance id per line: report only these tasks (subgroups)"),
+):
     """Rebuild the markdown report from finished cells."""
     cfg = load_config(config)
     if output:
         cfg.output_dir = Path(output)
-    text = build_report(load_rows(cfg.output_path), reference or cfg.reference_variant, cfg.variants)
+    rows = load_rows(cfg.output_path)
     path = cfg.output_path / "report.md"
+    if only_tasks:
+        ids = {line.strip() for line in Path(only_tasks).read_text().splitlines() if line.strip()}
+        rows = filter_rows(rows, ids)
+        path = cfg.output_path / f"report-{Path(only_tasks).stem}.md"
+    text = build_report(rows, reference or cfg.reference_variant, cfg.variants)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
     typer.echo(text)

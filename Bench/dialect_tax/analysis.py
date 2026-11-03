@@ -84,6 +84,11 @@ def load_rows(output_dir: Path) -> list[Row]:
     return rows
 
 
+def filter_rows(rows: list[Row], instance_ids: set[str]) -> list[Row]:
+    """Keep only rows for the given tasks (for subgroup analyses)."""
+    return [r for r in rows if r.instance_id in instance_ids]
+
+
 def per_task_rates(rows: list[Row], model: str, variant: str) -> dict[str, float]:
     buckets: dict[str, list[float]] = defaultdict(list)
     for r in rows:

@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 
-from dialect_tax.analysis import Row, build_report, estimate_tax, load_rows, paired_bootstrap_ci, sign_flip_p_value
+from dialect_tax.analysis import Row, build_report, estimate_tax, filter_rows, load_rows, paired_bootstrap_ci, sign_flip_p_value
 
 
 def make_rows(ref_solved: list[int], var_solved: list[int], model="m", ref="en", var="egy") -> list[Row]:
@@ -61,3 +61,16 @@ def test_load_rows_and_report(tmp_path):
     report = build_report(rows, "en", ["en", "egy"])
     assert "| egy | 1 | 0.0 | 100.0 |" in report
     assert "$1.00" in report
+
+
+def test_filter_rows_restricts_tax_to_subgroup():
+    rows = [
+        Row("a", "m", "en", 1, "resolved", True, 0.1, 5, "Submitted"),
+        Row("a", "m", "egy", 1, "unresolved", False, 0.1, 5, "Submitted"),
+        Row("b", "m", "en", 1, "resolved", True, 0.1, 5, "Submitted"),
+        Row("b", "m", "egy", 1, "resolved", True, 0.1, 5, "Submitted"),
+    ]
+    assert estimate_tax(rows, "m", "egy", "en").tax_pp == 50.0
+    only_b = filter_rows(rows, {"b"})
+    assert {r.instance_id for r in only_b} == {"b"}
+    assert estimate_tax(only_b, "m", "egy", "en").tax_pp == 0.0

@@ -32,6 +32,12 @@ Docker must be running. Images come from Epoch AI's GHCR mirror
 (`ghcr.io/epoch-research/swe-bench.eval.x86_64.<id>`), 1–4 GB each; runs are task-major
 and delete each image after its cells finish, so ~30 GB free disk is enough.
 
+Run the pilot on a machine with direct internet access. Two pilot tasks need it at grading
+time: `pylint-dev__pylint-4661` installs `appdirs` from PyPI, and `sphinx-doc__sphinx-7985` tests
+`linkcheck` against live sites. Behind a TLS-intercepting proxy both fail even with the gold patch
+(48/50 resolved in such a sandbox, 2026-11-03), so run `dialect-tax run --models gold --variants orig
+--repeats 1 --output runs/gold-check` on the target machine first and expect 50/50.
+
 Only one secret is needed for the pilot:
 
 ```bash

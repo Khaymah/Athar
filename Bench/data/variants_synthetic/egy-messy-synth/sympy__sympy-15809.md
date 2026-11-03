@@ -1,0 +1,1 @@
+دلوقت لو ناديت `Min()` او `Max()` من غير arguments بيضرب `ValueError: The Max/Min functions must have arguments.` انا شايف ان `Min()` الفاضيه المفروض ترجع `oo` و `Max()` الفاضيه ترجع `-oo` عشن دا اللى بيحصل مع ال empty set فى ال extended reals شوف https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers

@@ -35,6 +35,7 @@ EXPECTED_SCRIPT = {
     "gulf": "arabic",
     "lev": "arabic",
     "mag": "arabic",
+    "egy-messy": "arabic",
     "egy-franco": "latin",
     "gulf-franco": "latin",
     "mag-franco": "latin",

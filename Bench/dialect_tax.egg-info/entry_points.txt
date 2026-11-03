@@ -1,0 +1,2 @@
+[console_scripts]
+dialect-tax = dialect_tax.cli:app

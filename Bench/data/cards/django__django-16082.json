@@ -1,0 +1,12 @@
+{
+  "instance_id": "django__django-16082",
+  "repo": "django/django",
+  "title": "Resolve output_field when combining numeric expressions with MOD operator.",
+  "units": [
+    "Query expressions combined with `MOD` operator: `output_field` not resolved when operand types differ (Decimal and Integer)",
+    "Other mathematical operators resolve Decimal + Integer result to Decimal; MOD doesn't",
+    "Expected: MOD with Decimal and Integer operands resolves to Decimal, same as other operators"
+  ],
+  "attachments": [],
+  "original_prose": "Resolve output_field when combining numeric expressions with MOD operator.\nDescription\n\t\nWhen writing a Django expression for a query that does MOD, if the types of the query are different (Decimal and Integer), it doesn't resolve the result to a Decimal type, like it does for other mathematical operators."
+}

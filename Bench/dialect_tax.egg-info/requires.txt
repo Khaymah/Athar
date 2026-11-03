@@ -1,0 +1,9 @@
+swebench>=5.0
+mini-swe-agent>=2.4
+datasets>=3.0
+numpy>=1.26
+pyyaml>=6.0
+typer>=0.12
+
+[dev]
+pytest>=8

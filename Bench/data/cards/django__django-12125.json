@@ -1,0 +1,35 @@
+{
+  "instance_id": "django__django-12125",
+  "repo": "django/django",
+  "title": "makemigrations produces incorrect path for inner classes",
+  "units": [
+    "`makemigrations` writes wrong import path for a `models.Field` subclass defined as inner class of another class",
+    "nested class is serialized as if it were top-level in its module",
+    "repro models [[A1]]; generated migration [[A2]] uses `test1.models.Inner`, expected `test1.models.Outer.Inner`",
+    "real case: django-enumfields `EnumField` with an `Enum` nested inside model `Thing` [[A3]]",
+    "its migration [[A4]] references `test1.models.State` instead of `test1.models.Thing.State`"
+  ],
+  "attachments": [
+    {
+      "id": 1,
+      "kind": "code",
+      "text": "class Outer(object):\n\tclass Inner(models.CharField):\n\t\tpass\nclass A(models.Model):\n\tfield = Outer.Inner(max_length=20)"
+    },
+    {
+      "id": 2,
+      "kind": "code",
+      "text": "migrations.CreateModel(\n\tname='A',\n\tfields=[\n\t\t('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),\n\t\t('field', test1.models.Inner(max_length=20)),\n\t],\n),"
+    },
+    {
+      "id": 3,
+      "kind": "code",
+      "text": "import enum\nfrom enumfields import Enum, EnumField\nclass Thing(models.Model):\n\t@enum.unique\n\tclass State(Enum):\n\t\ton = 'on'\n\t\toff = 'off'\n\tstate = EnumField(enum=State)"
+    },
+    {
+      "id": 4,
+      "kind": "code",
+      "text": "migrations.CreateModel(\n\tname='Thing',\n\tfields=[\n\t\t('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),\n\t\t('state', enumfields.fields.EnumField(enum=test1.models.State, max_length=10)),\n\t],\n),"
+    }
+  ],
+  "original_prose": "makemigrations produces incorrect path for inner classes\nDescription\n\t\nWhen you define a subclass from django.db.models.Field as an inner class of some other class, and use this field inside a django.db.models.Model class, then when you run manage.py makemigrations, a migrations file is created which refers to the inner class as if it were a top-level class of the module it is in.\nTo reproduce, create the following as your model:\n[[A1]]\nAfter running manage.py makemigrations, the generated migrations file contains the following:\n[[A2]]\nNote the test1.models.Inner, which should have been test1.models.Outer.Inner.\nThe real life case involved an EnumField from django-enumfields, defined as an inner class of a Django Model class, similar to this:\n[[A3]]\nThis results in the following migrations code:\n[[A4]]\nThis refers to test1.models.State, instead of to test1.models.Thing.State."
+}

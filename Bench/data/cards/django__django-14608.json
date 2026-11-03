@@ -1,0 +1,14 @@
+{
+  "instance_id": "django__django-14608",
+  "repo": "django/django",
+  "title": "Add `nonform` CSS class for non form errors in FormSets",
+  "units": [
+    "Forms: non-field errors `ErrorList` gets `nonfield` CSS class; documented under rendering form error messages",
+    "FormSets: non-form errors get no equivalent CSS class",
+    "Request: add `nonform` CSS class to FormSet non-form errors",
+    "Goal: custom `ErrorList` can tell apart field errors, non-field errors (forms), non-form errors (FormSets)",
+    "Also document the `nonform` class for developers"
+  ],
+  "attachments": [],
+  "original_prose": "Add `nonform` CSS class for non form errors in FormSets\nDescription\n\t \n\t\t(last modified by Ties Jan Hefting)\n\t \nForms add the nonfield CSS class for non field errors in ErrorList instances. This is documented in a section on ​rendering form error messages. Similarly, in FormSets I'd expect to see the nonform CSS class added for non form errors. This would allow a custom ErrorList to make a distinction in form field errors, non field errors (forms) and non form errors (FormSets) when rendering error messages. Therefore I'd suggest to add this nonform CSS class and document it for developers to use."
+}

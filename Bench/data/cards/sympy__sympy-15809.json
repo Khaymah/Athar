@@ -1,0 +1,12 @@
+{
+  "instance_id": "sympy__sympy-15809",
+  "repo": "sympy/sympy",
+  "title": "Zero-argument Min() and Max()",
+  "units": [
+    "`Min()` and `Max()` with no arguments currently raise `ValueError: The Max/Min functions must have arguments.`",
+    "proposal: zero-arg `Min()` should return `oo`, zero-arg `Max()` should return `-oo`",
+    "justification: empty set in extended reals, see https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers"
+  ],
+  "attachments": [],
+  "original_prose": "Zero-argument Min() and Max()\nRight now `Min()` and `Max()` with no arguments raise `ValueError: The Max/Min functions must have arguments.`. It might be mathematically more convenient to have them return `oo` and `-oo`, respectively. See https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers for why these are valid answers mathematically."
+}

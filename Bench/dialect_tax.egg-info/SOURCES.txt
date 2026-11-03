@@ -1,0 +1,16 @@
+pyproject.toml
+dialect_tax/__init__.py
+dialect_tax/analysis.py
+dialect_tax/cards.py
+dialect_tax/cli.py
+dialect_tax/config.py
+dialect_tax/evaluate.py
+dialect_tax/runner.py
+dialect_tax/tasks.py
+dialect_tax/variants.py
+dialect_tax.egg-info/PKG-INFO
+dialect_tax.egg-info/SOURCES.txt
+dialect_tax.egg-info/dependency_links.txt
+dialect_tax.egg-info/entry_points.txt
+dialect_tax.egg-info/requires.txt
+dialect_tax.egg-info/top_level.txt

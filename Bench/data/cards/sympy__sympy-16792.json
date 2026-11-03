@@ -1,0 +1,37 @@
+{
+  "instance_id": "sympy__sympy-16792",
+  "repo": "sympy/sympy",
+  "title": "autowrap with cython backend fails when array arguments do not appear in wrapped expr",
+  "units": [
+    "`autowrap` with `backend='cython'` broken when an array argument does not appear in the wrapped `expr`",
+    "repro in [[A1]]: `MatrixSymbol('x', 2, 1)` as arg, `expr = 1.0`; call should return `1.0`",
+    "instead raises [[A2]] (`TypeError: only size-1 arrays can be converted to Python scalars`)",
+    "cause: generated C function has wrong signature, see [[A3]]; `x` should be `double *`, not `double`",
+    "works fine if `expr` depends on every argument, e.g. `expr = x[0,0]` in [[A4]]",
+    "use case: external libs (e.g. numerical integration) need a fixed signature even if some args are unused",
+    "author suspects the bug is in `codegen`"
+  ],
+  "attachments": [
+    {
+      "id": 1,
+      "kind": "code",
+      "text": "```python\nfrom sympy.utilities.autowrap import autowrap\nfrom sympy import MatrixSymbol\nimport numpy as np\n\nx = MatrixSymbol('x', 2, 1)\nexpr = 1.0\nf = autowrap(expr, args=(x,), backend='cython')\n\nf(np.array([[1.0, 2.0]]))\n```"
+    },
+    {
+      "id": 2,
+      "kind": "code",
+      "text": "```python\nTypeError: only size-1 arrays can be converted to Python scalars\n```"
+    },
+    {
+      "id": 3,
+      "kind": "code",
+      "text": "```C\ndouble autofunc(double x) {\n\n   double autofunc_result;\n   autofunc_result = 1.0;\n   return autofunc_result;\n\n}\n```"
+    },
+    {
+      "id": 4,
+      "kind": "code",
+      "text": "```python\nfrom sympy.utilities.autowrap import autowrap\nfrom sympy import MatrixSymbol\nimport numpy as np\n\nx = MatrixSymbol('x', 2, 1)\n# now output depends on x\nexpr = x[0,0]\nf = autowrap(expr, args=(x,), backend='cython')\n\n# returns 1.0 as expected, without failure\nf(np.array([[1.0, 2.0]]))\n```"
+    }
+  ],
+  "original_prose": "autowrap with cython backend fails when array arguments do not appear in wrapped expr\nWhen using the cython backend for autowrap, it appears that the code is not correctly generated when the function in question has array arguments that do not appear in the final expression. A minimal counterexample is:\n\n[[A1]]\n\nThis should of course return `1.0` but instead fails with:\n[[A2]]\n\nA little inspection reveals that this is because the corresponding C function is generated with an incorrect signature:\n\n[[A3]]\n\n(`x` should be `double *`, not `double` in this case)\n\nI've found that this error won't occur so long as `expr` depends at least in part on each argument. For example this slight modification of the above counterexample works perfectly:\n\n[[A4]]\n\nThis may seem like a silly issue (\"why even have `x` as an argument if it doesn't appear in the expression you're trying to evaluate?\"). But of course in interfacing with external libraries (e.g. for numerical integration), one often needs functions to have a pre-defined signature regardless of whether a given argument contributes to the output.\n\nI think I've identified the problem in `codegen` and will suggest a PR shortly."
+}

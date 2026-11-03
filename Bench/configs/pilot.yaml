@@ -1,0 +1,36 @@
+name: pilot
+dataset: SWE-bench/SWE-bench_Verified
+split: test
+# Epoch AI's GHCR mirror of the SWE-bench images (smaller, and avoids Docker Hub's anonymous pull limits).
+image_template: "ghcr.io/epoch-research/swe-bench.eval.x86_64.{instance_id}:latest"
+
+tasks_file: data/pilot_tasks.json
+cards_dir: data/cards
+variants_dir: data/variants
+output_dir: runs/pilot
+
+# orig = untouched SWE-bench text (sanity anchor, not the reference).
+# en   = English prose written by a human from the same card as the dialect variants (the fair reference).
+variants: [orig, en, egy, egy-franco]
+reference_variant: en
+runs_per_cell: 3
+
+models:
+  - name: sonnet-5.5
+    model_name: anthropic/claude-sonnet-5.5
+    model_class: openrouter
+  - name: deepseek-v4.1-flash
+    model_name: deepseek/deepseek-v4.1-flash
+    model_class: openrouter
+
+agent:
+  step_limit: 100
+  cost_limit: 2.0
+  wall_time_seconds: 1800
+  command_timeout_seconds: 120
+
+eval:
+  timeout_seconds: 1800
+
+workers: 4
+cleanup_images: true

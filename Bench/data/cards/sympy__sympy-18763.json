@@ -1,0 +1,39 @@
+{
+  "instance_id": "sympy__sympy-18763",
+  "repo": "sympy/sympy",
+  "title": "Incorrect parenthesizing of Subs",
+  "units": [
+    "LaTeX printing of `Subs` doesn't parenthesize the inner expression when multiplied",
+    "example expression [[A1]]",
+    "current `latex` output [[A2]], rendered image [[A3]]",
+    "desired output with inner expr wrapped in `\\left(...\\right)` [[A4]], rendered image [[A5]]"
+  ],
+  "attachments": [
+    {
+      "id": 1,
+      "kind": "code",
+      "text": "```python\n>>> from sympy import Subs\n>>> from sympy.abc import x,y\n>>> 3*Subs(-x+y, (x,),(1,))\n```"
+    },
+    {
+      "id": 2,
+      "kind": "code",
+      "text": "```python\n'3 \\\\left. - x + y \\\\right|_{\\\\substack{ x=1 }}'\n```"
+    },
+    {
+      "id": 3,
+      "kind": "image",
+      "text": "![image](https://quicklatex.com/cache3/76/ql_9672fd7e62c909ff3d9ac8543c2e2576_l3.png)"
+    },
+    {
+      "id": 4,
+      "kind": "code",
+      "text": "```python\n'3 \\\\left. \\\\left(- x + y\\\\right) \\\\right|_{\\\\substack{ x=1 }}'\n```"
+    },
+    {
+      "id": 5,
+      "kind": "image",
+      "text": "![image](https://quicklatex.com/cache3/bf/ql_936ffdb876e784206d4c54bb93d28dbf_l3.png)"
+    }
+  ],
+  "original_prose": "Incorrect parenthesizing of Subs\nHere is an example.\n[[A1]]\nLaTeX printing of this gives:  \n[[A2]]\n\n[[A3]]\n\n\nIt would be better to be parenthesized to:  \n[[A4]]\n\n[[A5]]"
+}

@@ -1,0 +1,583 @@
+<title>ورشة ضريبة اللهجة</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Layout: sticky header, then a two-pane workbench (task list | writing desk) that stacks on phones. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --sunken: #e8ecea;
+  --fg: #17201c;
+  --muted: #5b6862;
+  --line: #d3dbd7;
+  --accent: #1d6b52;
+  --accent-soft: #d9ece4;
+  --ok: #2a7a3d;
+  --warn: #9a6400;
+  --warn-soft: #fbf0d9;
+  --bad: #b3261e;
+  --bad-soft: #fbe3e1;
+  --code-bg: #eef1f0;
+  --font-display: "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111614; --surface: #19201d; --sunken: #212a26; --fg: #e4ebe7; --muted: #9aa8a1; --line: #2e3a35;
+    --accent: #5cc29b; --accent-soft: #1d3a2f; --ok: #6cc583; --warn: #e2b155; --warn-soft: #3a2f17;
+    --bad: #f08a80; --bad-soft: #3d1f1c; --code-bg: #151b18; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111614; --surface: #19201d; --sunken: #212a26; --fg: #e4ebe7; --muted: #9aa8a1; --line: #2e3a35;
+  --accent: #5cc29b; --accent-soft: #1d3a2f; --ok: #6cc583; --warn: #e2b155; --warn-soft: #3a2f17;
+  --bad: #f08a80; --bad-soft: #3d1f1c; --code-bg: #151b18; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.65; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1280px; margin: 0 auto; }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 12px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; margin: 0; letter-spacing: 0; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 0.85rem; }
+.meter { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { width: 160px; max-width: 30vw; height: 8px; background: var(--sunken); border-radius: 4px; overflow: hidden; display: flex; }
+.bar span { display: block; height: 100%; }
+.bar .s { background: var(--accent); }
+.bar .c { background: var(--warn); }
+.notice { margin-block: 12px 0; padding: 10px 14px; border-radius: 8px; background: var(--warn-soft); color: var(--fg); border: 1px solid var(--line); font-size: 0.9rem; }
+main.wrap { display: grid; grid-template-columns: minmax(250px, 320px) minmax(0, 1fr); gap: 20px; padding-block: 16px 48px; }
+@media (max-width: 860px) { main.wrap { grid-template-columns: minmax(0, 1fr); } }
+aside.list { min-width: 0; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.filters button { font: inherit; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+ul.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: calc(100vh - 190px); overflow-y: auto; }
+@media (max-width: 860px) { ul.tasks { max-height: 260px; } }
+ul.tasks button { width: 100%; text-align: start; font: inherit; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--fg); cursor: pointer; }
+ul.tasks button:hover { background: var(--surface); border-color: var(--line); }
+ul.tasks button[aria-current="true"] { background: var(--surface); border-color: var(--accent); }
+.tid { font-family: var(--font-mono); font-size: 0.78rem; direction: ltr; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip { font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); }
+.chip.free { color: var(--muted); }
+.chip.mine { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.chip.taken { background: var(--sunken); color: var(--muted); border-color: transparent; }
+.chip.done { background: var(--accent); color: var(--surface); border-color: transparent; }
+section.desk { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; min-width: 0; }
+#deskBody:not(.empty) { display: flex; flex-direction: column; gap: 18px; }
+.desk-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.desk-head h2 { font-family: var(--font-mono); font-weight: 500; font-size: 1rem; margin: 0; direction: ltr; overflow-wrap: anywhere; }
+.desk-head .actions { margin-inline-start: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.05rem; margin: 0 0 10px; }
+ol.units { direction: ltr; margin: 0; padding-inline-start: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; counter-reset: u; }
+ol.units li { counter-increment: u; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start; }
+ol.units li::before { content: counter(u); font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); padding-top: 3px; text-align: center; }
+.unit { direction: ltr; text-align: left; font-size: 0.92rem; overflow-wrap: anywhere; }
+code, .unit code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 0 4px; border-radius: 4px; }
+.ph { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent); font-weight: 500; }
+details.att { border: 1px solid var(--line); border-radius: 8px; background: var(--code-bg); }
+details.att + details.att { margin-top: 8px; }
+details.att summary { cursor: pointer; padding: 6px 12px; font-size: 0.85rem; display: flex; gap: 10px; align-items: center; }
+details.att pre { margin: 0; padding: 10px 12px; border-top: 1px solid var(--line); overflow-x: auto; direction: ltr; text-align: left; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; max-height: 320px; }
+.writing { display: grid; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.field-head label { font-weight: 600; }
+.field-head .hint { color: var(--muted); font-size: 0.82rem; }
+.inserts { display: flex; gap: 4px; flex-wrap: wrap; margin-inline-start: auto; }
+.inserts button { font-family: var(--font-mono); font-size: 0.75rem; padding: 1px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); cursor: pointer; }
+textarea { font: inherit; font-size: 0.95rem; line-height: 1.7; width: 100%; min-height: 150px; resize: vertical; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+textarea[dir="ltr"] { font-family: var(--font-mono); font-size: 0.88rem; }
+textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+textarea:disabled { opacity: 0.7; }
+ul.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; }
+ul.checks li { padding-inline-start: 14px; position: relative; }
+ul.checks li::before { content: ""; position: absolute; inset-inline-start: 0; top: 0.65em; width: 7px; height: 7px; border-radius: 50%; }
+ul.checks li.bad { color: var(--bad); } ul.checks li.bad::before { background: var(--bad); }
+ul.checks li.warn { color: var(--warn); } ul.checks li.warn::before { background: var(--warn); }
+ul.checks li.ok { color: var(--ok); } ul.checks li.ok::before { background: var(--ok); }
+.btn { font: inherit; font-size: 0.9rem; font-weight: 600; padding: 7px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.status-line { color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.empty { text-align: center; color: var(--muted); padding-block: 40px; }
+.empty strong { display: block; font-family: var(--font-display); font-size: 1.2rem; color: var(--fg); margin-bottom: 6px; }
+details.guide summary { cursor: pointer; font-weight: 600; }
+details.guide ul { margin: 8px 0 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.toast { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); inset-inline-start: max(16px, env(safe-area-inset-left, 0px)); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 0.88rem; z-index: 20; max-width: calc(100vw - 32px); }
+@media (prefers-reduced-motion: no-preference) { ul.tasks button, .btn { transition: background-color .15s, border-color .15s; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div>
+      <h1>ورشة ضريبة اللهجة</h1>
+      <div class="sub">اكتب كل طلب بالإنجليزي والمصري والفرانكو، زي ما بتكلّم الـ agent فعلاً.</div>
+    </div>
+    <div class="meter" aria-live="polite">
+      <div class="bar" aria-hidden="true"><span class="s" id="barSubmitted"></span><span class="c" id="barClaimed"></span></div>
+      <span id="meterText">٠ من ٥٠ اتسلّم</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap"><div class="notice" id="notice" hidden></div></div>
+
+<main class="wrap">
+  <aside class="list" aria-label="التاسكات">
+    <div class="filters" role="group" aria-label="فلترة">
+      <button type="button" data-filter="all" aria-pressed="true">الكل</button>
+      <button type="button" data-filter="free" aria-pressed="false">متاح</button>
+      <button type="button" data-filter="mine" aria-pressed="false">بتاعي</button>
+      <button type="button" data-filter="done" aria-pressed="false">اتسلّم</button>
+    </div>
+    <ul class="tasks" id="taskList"></ul>
+  </aside>
+
+  <section class="desk" id="desk">
+    <div class="panel">
+      <details class="guide" id="guide" open>
+        <summary>قبل ما تبدأ: ٦ قواعد</summary>
+        <ul>
+          <li>متفتحش الـ issue الأصلي. اقرأ الوحدات، افهم المشكلة، واكتب بطريقتك.</li>
+          <li>كل الوحدات لازم تكون في طلبك، ومتزودش معلومة مش موجودة.</li>
+          <li>المرفقات بالـ placeholder بس: اكتب <span class="ph">[[A1]]</span> مكان ما كنت هتلزق الكود.</li>
+          <li>أسماء الـ functions والـ classes تفضل بالإنجليزي زي ما هي.</li>
+          <li>ممنوع أي AI أو أداة ترجمة. إحنا بنقيس الموديلات على كلام بشر.</li>
+          <li>اكتب الإنجليزي الأول، وبعده المصري، وبعده الفرانكو من المصري اللي كتبته.</li>
+        </ul>
+      </details>
+    </div>
+    <div id="deskBody" class="panel empty">
+      <strong>اختار تاسك من القايمة</strong>
+      احجزه، اكتب الصيغ التلاتة، وسلّمه. المسودة بتتحفظ لوحدها.
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script type="application/json" id="cards">/*__CARDS__*/</script>
+<script>
+(() => {
+  const CARDS = JSON.parse(document.getElementById("cards").textContent);
+  const BY_ID = Object.fromEntries(CARDS.map(c => [c.instance_id, c]));
+  const VARIANTS = [
+    { key: "en", label: "إنجليزي", dir: "ltr", script: "latin", hint: "زي ما بتكتب لـ agent بالإنجليزي عادي" },
+    { key: "egy", label: "مصري", dir: "rtl", script: "arabic", hint: "بحروف عربي، بالخلط الطبيعي بتاعك (الـ function، الـ error...)" },
+    { key: "franco", label: "مصري فرانكو", dir: "ltr", script: "latin", hint: "نفس المصري بالفرانكو (3، 7، 2...) زي واتساب" },
+  ];
+  const AR_DIGITS = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+
+  const state = { uid: null, canWrite: null, db: null, claims: {}, mine: {}, selected: null, filter: "all", dbReady: false };
+  const saveTimers = {};
+  const $ = id => document.getElementById(id);
+
+  function toast(text) {
+    const t = $("toast");
+    t.textContent = text;
+    t.hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+  function notice(text) {
+    const n = $("notice");
+    n.textContent = text || "";
+    n.hidden = !text;
+  }
+
+  function localKey(id) { return "dt-draft:" + id; }
+  function readLocal(id) { try { return JSON.parse(localStorage.getItem(localKey(id)) || "null"); } catch { return null; } }
+  function writeLocal(id, body) { try { localStorage.setItem(localKey(id), JSON.stringify(body)); } catch {} }
+
+  function taskStatus(id) {
+    const claim = state.claims[id];
+    if (!claim || !claim.uid) return "free";
+    if (claim.status === "submitted") return claim.uid === state.uid ? "done-mine" : "done";
+    return claim.uid === state.uid ? "mine" : "taken";
+  }
+  const CHIP = {
+    free: ["free", "متاح"], mine: ["mine", "محجوز لك"], taken: ["taken", "مع كاتب تاني"],
+    "done-mine": ["done", "سلّمته"], done: ["done", "اتسلّم"],
+  };
+
+  function renderMeter() {
+    const total = CARDS.length;
+    let submitted = 0, claimed = 0;
+    for (const c of CARDS) {
+      const s = taskStatus(c.instance_id);
+      if (s === "done" || s === "done-mine") submitted++;
+      else if (s === "mine" || s === "taken") claimed++;
+    }
+    $("barSubmitted").style.width = (100 * submitted / total) + "%";
+    $("barClaimed").style.width = (100 * claimed / total) + "%";
+    $("meterText").textContent = `${AR_DIGITS(submitted)} من ${AR_DIGITS(total)} اتسلّم · ${AR_DIGITS(claimed)} محجوز`;
+  }
+
+  function renderList() {
+    const ul = $("taskList");
+    ul.textContent = "";
+    for (const c of CARDS) {
+      const s = taskStatus(c.instance_id);
+      const f = state.filter;
+      if (f === "free" && s !== "free") continue;
+      if (f === "mine" && s !== "mine" && s !== "done-mine") continue;
+      if (f === "done" && s !== "done" && s !== "done-mine") continue;
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-current", String(state.selected === c.instance_id));
+      const name = document.createElement("span");
+      name.className = "tid";
+      name.textContent = c.instance_id;
+      const chip = document.createElement("span");
+      chip.className = "chip " + CHIP[s][0];
+      chip.textContent = CHIP[s][1];
+      b.append(name, chip);
+      b.addEventListener("click", () => select(c.instance_id));
+      li.append(b);
+      ul.append(li);
+    }
+    if (!ul.children.length) {
+      const li = document.createElement("li");
+      li.className = "status-line";
+      li.textContent = "مفيش تاسكات في الفلتر ده.";
+      ul.append(li);
+    }
+    renderMeter();
+  }
+
+  function renderUnit(text) {
+    const span = document.createElement("span");
+    span.className = "unit";
+    const parts = text.split(/(`[^`]+`|\[\[A\d+\]\])/g);
+    for (const p of parts) {
+      if (!p) continue;
+      if (p.startsWith("`") && p.endsWith("`")) {
+        const code = document.createElement("code");
+        code.textContent = p.slice(1, -1);
+        span.append(code);
+      } else if (/^\[\[A\d+\]\]$/.test(p)) {
+        const ph = document.createElement("span");
+        ph.className = "ph";
+        ph.textContent = p;
+        span.append(ph);
+      } else {
+        span.append(document.createTextNode(p));
+      }
+    }
+    return span;
+  }
+
+  const ARABIC = /[؀-ۿ]/g, LATIN = /[A-Za-z]/g, PH = /\[\[A(\d+)\]\]/g;
+  function stripCode(t) { return t.replace(PH, "").replace(/`[^`]*`/g, ""); }
+  function arabicRatio(t) {
+    const body = stripCode(t);
+    const a = (body.match(ARABIC) || []).length, l = (body.match(LATIN) || []).length;
+    return a + l ? a / (a + l) : 0;
+  }
+  function validate(variant, text, card) {
+    const out = [];
+    const words = stripCode(text).trim().split(/\s+/).filter(Boolean).length;
+    if (!text.trim()) return [{ level: "bad", msg: "لسه فاضي" }];
+    if (words < 8) out.push({ level: "bad", msg: `قصير أوي (${AR_DIGITS(words)} كلمة)، المطلوب ٨ على الأقل` });
+    const ids = new Set(card.attachments.map(a => a.id));
+    const refs = [...text.matchAll(PH)].map(m => Number(m[1]));
+    const unknown = [...new Set(refs.filter(n => !ids.has(n)))];
+    if (unknown.length) out.push({ level: "bad", msg: "placeholder مش موجود: " + unknown.map(n => `[[A${n}]]`).join("، ") });
+    const missing = [...ids].filter(n => !refs.includes(n));
+    if (missing.length) out.push({ level: "warn", msg: "مرفقات مش مستخدمة (هتتحط في الآخر): " + missing.map(n => `[[A${n}]]`).join("، ") });
+    const r = arabicRatio(text);
+    if (variant.script === "arabic" && r < 0.5) out.push({ level: "bad", msg: "المفروض حروف عربي" });
+    if (variant.script === "latin" && r > 0.05) out.push({ level: "bad", msg: "المفروض حروف لاتيني بس" });
+    for (const a of card.attachments) {
+      const line = a.text.split("\n").map(s => s.trim()).find(s => s.length > 20 && !s.startsWith("```"));
+      if (line && text.includes(line)) out.push({ level: "warn", msg: `شكلك لزقت كود [[A${a.id}]] بدل الـ placeholder` });
+    }
+    if (!out.length) out.push({ level: "ok", msg: "تمام" });
+    return out;
+  }
+
+  function currentDraft(id) {
+    const remote = state.mine[id];
+    const local = readLocal(id);
+    if (remote && (!local || (remote.updatedAt || 0) >= (local.updatedAt || 0))) return { ...remote };
+    return local || { en: "", egy: "", franco: "", status: "draft", updatedAt: 0 };
+  }
+
+  function select(id) {
+    state.selected = id;
+    const g = $("guide"); if (g) g.open = false;
+    renderList();
+    renderDesk();
+    if (window.matchMedia("(max-width: 860px)").matches) $("desk").scrollIntoView({ block: "start" });
+  }
+
+  function renderDesk() {
+    const id = state.selected;
+    const body = $("deskBody");
+    if (!id) return;
+    const card = BY_ID[id];
+    const s = taskStatus(id);
+    const editable = (s === "mine" || s === "done-mine") && state.canWrite !== false;
+    const draft = currentDraft(id);
+    body.className = "panel";
+    body.textContent = "";
+
+    const head = document.createElement("div");
+    head.className = "desk-head";
+    const h2 = document.createElement("h2");
+    h2.textContent = id;
+    const chip = document.createElement("span");
+    chip.className = "chip " + CHIP[s][0];
+    chip.textContent = CHIP[s][1];
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    if (s === "free") {
+      const claim = button("احجز التاسك ده", () => claimTask(id));
+      claim.disabled = !state.dbReady || state.canWrite === false;
+      actions.append(claim);
+    } else if (s === "mine") {
+      actions.append(button("سيبه لحد تاني", () => releaseTask(id), true));
+    }
+    head.append(h2, chip, actions);
+    body.append(head);
+
+    const unitsBox = document.createElement("div");
+    const h3 = document.createElement("h3");
+    h3.textContent = "اللي لازم طلبك يوصّله";
+    const ol = document.createElement("ol");
+    ol.className = "units";
+    for (const u of card.units) {
+      const li = document.createElement("li");
+      li.append(renderUnit(u));
+      ol.append(li);
+    }
+    unitsBox.append(h3, ol);
+    body.append(unitsBox);
+
+    if (card.attachments.length) {
+      const attBox = document.createElement("div");
+      const h = document.createElement("h3");
+      h.textContent = "المرفقات (بتتحط زي ما هي)";
+      attBox.append(h);
+      for (const a of card.attachments) {
+        const d = document.createElement("details");
+        d.className = "att";
+        const sm = document.createElement("summary");
+        const ph = document.createElement("span");
+        ph.className = "ph";
+        ph.textContent = `[[A${a.id}]]`;
+        const kind = document.createElement("span");
+        kind.className = "status-line";
+        kind.textContent = { code: "كود", traceback: "traceback", image: "صورة", details: "تفاصيل البيئة" }[a.kind] || a.kind;
+        sm.append(ph, kind);
+        const pre = document.createElement("pre");
+        pre.textContent = a.text;
+        d.append(sm, pre);
+        attBox.append(d);
+      }
+      body.append(attBox);
+    }
+
+    const writing = document.createElement("div");
+    writing.className = "writing";
+    const checksById = {};
+    for (const v of VARIANTS) {
+      const field = document.createElement("div");
+      field.className = "field";
+      const fh = document.createElement("div");
+      fh.className = "field-head";
+      const label = document.createElement("label");
+      label.htmlFor = "ta-" + v.key;
+      label.textContent = v.label;
+      const hint = document.createElement("span");
+      hint.className = "hint";
+      hint.textContent = v.hint;
+      fh.append(label, hint);
+      const ta = document.createElement("textarea");
+      ta.id = "ta-" + v.key;
+      ta.dir = v.dir;
+      ta.lang = v.key === "egy" ? "ar-EG" : "en";
+      ta.value = draft[v.key] || "";
+      ta.disabled = !editable;
+      ta.spellcheck = v.key === "en";
+      if (card.attachments.length && editable) {
+        const ins = document.createElement("div");
+        ins.className = "inserts";
+        for (const a of card.attachments) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = `[[A${a.id}]]`;
+          b.title = "حط الـ placeholder مكان المؤشر";
+          b.addEventListener("click", () => insertAt(ta, `[[A${a.id}]]`));
+          ins.append(b);
+        }
+        fh.append(ins);
+      }
+      const checks = document.createElement("ul");
+      checks.className = "checks";
+      checksById[v.key] = checks;
+      ta.addEventListener("input", () => { paintChecks(v, ta.value, card, checks); scheduleSave(id); });
+      paintChecks(v, ta.value, card, checks);
+      field.append(fh, ta, checks);
+      writing.append(field);
+    }
+    body.append(writing);
+
+    const foot = document.createElement("div");
+    foot.className = "desk-head";
+    const status = document.createElement("span");
+    status.className = "status-line";
+    status.id = "saveStatus";
+    status.textContent = s === "done-mine" ? "متسلّم. ينفع تعدّل وتسلّم تاني." : editable ? (draft.updatedAt ? "المسودة محفوظة" : "") : s === "free" ? "احجز التاسك الأول عشان تكتب" : s === "taken" ? "التاسك ده مع كاتب تاني" : "";
+    const footActions = document.createElement("div");
+    footActions.className = "actions";
+    if (editable) {
+      footActions.append(button("احفظ مسودة", () => saveDraft(id, "draft", true), true));
+      footActions.append(button(s === "done-mine" ? "سلّم التعديل" : "سلّم", () => submit(id)));
+    }
+    foot.append(status, footActions);
+    body.append(foot);
+  }
+
+  function button(text, onClick, ghost) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn" + (ghost ? " ghost" : "");
+    b.textContent = text;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+  function insertAt(ta, text) {
+    const start = ta.selectionStart ?? ta.value.length, end = ta.selectionEnd ?? start;
+    ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+    ta.focus();
+    ta.selectionStart = ta.selectionEnd = start + text.length;
+    ta.dispatchEvent(new Event("input"));
+  }
+  function paintChecks(v, text, card, ul) {
+    ul.textContent = "";
+    for (const c of validate(v, text, card)) {
+      const li = document.createElement("li");
+      li.className = c.level;
+      li.textContent = c.msg;
+      ul.append(li);
+    }
+  }
+  function readFields() {
+    const body = {};
+    for (const v of VARIANTS) body[v.key] = ($("ta-" + v.key) || {}).value || "";
+    return body;
+  }
+  function setSaveStatus(text) { const s = $("saveStatus"); if (s) s.textContent = text; }
+
+  function scheduleSave(id) {
+    const body = { ...readFields(), updatedAt: Date.now() };
+    writeLocal(id, { ...body, status: (state.mine[id] || {}).status || "draft" });
+    setSaveStatus("بيتحفظ...");
+    clearTimeout(saveTimers[id]);
+    saveTimers[id] = setTimeout(() => saveDraft(id, null, false), 1800);
+  }
+
+  const writing = {};
+  async function saveDraft(id, forceStatus, announce) {
+    clearTimeout(saveTimers[id]);
+    if (!state.db || !state.uid) { setSaveStatus("محفوظ على جهازك بس (مفيش اتصال بقاعدة البيانات)"); return false; }
+    if (writing[id]) { await writing[id]; }
+    const prev = state.mine[id] || {};
+    const body = { ...readFields(), status: forceStatus || prev.status || "draft", updatedAt: Date.now() };
+    if (forceStatus === "draft" && prev.status === "submitted") body.status = "submitted";
+    const p = state.db.doc(`subs/${state.uid}/tasks/${id}`).set(body);
+    writing[id] = p.catch(() => {});
+    try {
+      await p;
+      setSaveStatus("المسودة محفوظة");
+      if (announce) toast("اتحفظت المسودة");
+      return true;
+    } catch (e) {
+      setSaveStatus("الحفظ فشل، النص محفوظ على جهازك");
+      if (e && e.code === "invalid_argument") { state.canWrite = false; notice("صلاحيتك على الصفحة دي قراءة بس. اطلب من صاحبها يخليك Contributor."); }
+      return false;
+    } finally { writing[id] = null; }
+  }
+
+  async function submit(id) {
+    const card = BY_ID[id];
+    const fields = readFields();
+    const blocking = VARIANTS.filter(v => validate(v, fields[v.key], card).some(c => c.level === "bad"));
+    if (blocking.length) { toast("صلّح الحاجات اللي باللون الأحمر في: " + blocking.map(v => v.label).join("، ")); return; }
+    const ok = await saveDraft(id, "submitted", false);
+    if (!ok) return;
+    try {
+      await state.db.doc("claims/" + id).set({ uid: state.uid, status: "submitted", at: Date.now() });
+      toast("اتسلّم، شكراً!");
+    } catch { toast("النص اتحفظ بس حالة التاسك متحدثتش. جرّب تاني."); }
+  }
+
+  async function claimTask(id) {
+    if (!state.db || !state.uid) return;
+    const ref = state.db.doc("claims/" + id);
+    try {
+      const lease = await ref.acquire({ holder: state.uid, ttlMs: 5000 });
+      if (!lease.acquired) { toast("حد تاني بيحجزه دلوقتي. جرّب بعد ثواني."); return; }
+      const snap = await ref.get();
+      const cur = snap.exists ? snap.data() : null;
+      if (cur && cur.uid && cur.uid !== state.uid) { toast("التاسك ده اتحجز خلاص."); return; }
+      await ref.set({ uid: state.uid, status: "claimed", at: Date.now() });
+      toast("اتحجز. ابدأ اكتب.");
+    } catch (e) {
+      if (e && e.code === "invalid_argument") { state.canWrite = false; notice("صلاحيتك على الصفحة دي قراءة بس. اطلب من صاحبها يخليك Contributor."); renderDesk(); }
+      else toast("الحجز فشل. جرّب تاني.");
+    }
+  }
+
+  async function releaseTask(id) {
+    if (!state.db) return;
+    try {
+      const snap = await state.db.doc("claims/" + id).get();
+      const cur = snap.exists ? snap.data() : null;
+      if (cur && cur.uid === state.uid && cur.status !== "submitted") await state.db.doc("claims/" + id).delete();
+      toast("سيبت التاسك.");
+    } catch { toast("مقدرتش أسيب التاسك. جرّب تاني."); }
+  }
+
+  document.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => {
+    state.filter = b.dataset.filter;
+    document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    renderList();
+  }));
+
+  renderList();
+
+  (async () => {
+    const loadTimer = setTimeout(() => { if (!state.dbReady) notice("مش قادر أوصل لقاعدة البيانات دلوقتي. تقدر تقرا التاسكات، والكتابة هتتحفظ على جهازك لحد ما الاتصال يرجع."); }, 10000);
+    const [user, db] = await Promise.all([window.claude?.use?.("user") ?? null, window.claude?.use?.("db") ?? null]);
+    if (!db || !user) { clearTimeout(loadTimer); notice("افتح الصفحة وأنت مسجّل دخول عشان تحجز وتسلّم. تقدر تتصفح التاسكات دلوقتي."); return; }
+    state.uid = await user.id();
+    state.canWrite = await user.can("data.write");
+    if (!state.uid) { clearTimeout(loadTimer); notice("مقدرتش أعرف حسابك على الصفحة دي، فالحجز والحفظ مقفولين."); return; }
+    if (state.canWrite === false) notice("صلاحيتك على الصفحة دي قراءة بس. اطلب من صاحبها يخليك Contributor عشان تكتب.");
+    state.db = db;
+    db.collection("claims").onSnapshot(snap => {
+      const next = {};
+      for (const d of snap.docs) next[d.id] = d.data();
+      state.claims = next;
+      if (!snap.metadata.fromCache) { state.dbReady = true; clearTimeout(loadTimer); if ($("notice").textContent.startsWith("مش قادر")) notice(""); }
+      renderList();
+      if (state.selected && !document.activeElement?.matches?.("textarea")) renderDesk();
+    }, () => { clearTimeout(loadTimer); notice("الاتصال بقاعدة البيانات اتقطع. اعمل refresh للصفحة."); });
+    db.collection(`subs/${state.uid}/tasks`).onSnapshot(snap => {
+      const next = {};
+      for (const d of snap.docs) next[d.id] = d.data();
+      state.mine = next;
+      renderList();
+    }, () => {});
+  })();
+})();
+</script>

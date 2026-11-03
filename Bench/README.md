@@ -56,6 +56,28 @@ dialect-tax report                       # rebuild runs/pilot/report.md
 and must come out `empty_patch`. If `gold` fails on a task, that task's environment is broken
 and should be dropped before spending money on it.
 
+## Writers' web page
+
+`web/WriterApp.template.html` is built into `web/WriterApp.html` by
+`dialect-tax build-writer-page` and published as a private artifact. It embeds the cards
+**without** the English prose or title. Writers (shared as Contributors) claim a task,
+write `en` / `egy` / `egy-franco` with live script and placeholder checks, and submit.
+
+Store layout (artifact `db`):
+
+```
+claims/<instance_id>               {uid, status: claimed|submitted, at}
+subs/<uid>/tasks/<instance_id>     {en, egy, franco, status, updatedAt}   # each writer writes only their own
+```
+
+To pull submissions into the repo, export `claims` and each claimer's `subs/<uid>/tasks`
+to a directory (the store's `out_dir` export), then:
+
+```bash
+dialect-tax import-submissions path/to/export   # writes data/variants/* and data/variants/provenance.json
+dialect-tax validate
+```
+
 ## Output layout
 
 ```

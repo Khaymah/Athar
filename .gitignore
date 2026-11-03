@@ -5,3 +5,4 @@ __pycache__/
 Bench/runs/
 Bench/logs/
 *.egg-info/
+Bench/web/WriterApp.html

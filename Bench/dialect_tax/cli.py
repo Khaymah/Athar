@@ -172,5 +172,27 @@ def estimate_cost(config: str = CONFIG, output: str = typer.Option(None), tasks:
     typer.echo(f"Total: ${total:,.0f}")
 
 
+@app.command("build-writer-page")
+def build_writer_page(config: str = CONFIG, template: str = "web/WriterApp.template.html", out: str = "web/WriterApp.html"):
+    """Embed the cards (without English prose) into the writers' web page."""
+    from dialect_tax.writer_page import build_page
+
+    cfg = load_config(config)
+    path = build_page(cfg.resolve(Path(template)), cfg.cards_path, load_task_ids(cfg.tasks_path), cfg.resolve(Path(out)))
+    typer.echo(f"Wrote {path} ({path.stat().st_size:,} bytes)")
+
+
+@app.command("import-submissions")
+def import_submissions_cmd(dump: str, config: str = CONFIG, include_drafts: bool = False):
+    """Write writers' submitted texts into data/variants/. DUMP is a JSON file or an exported store directory."""
+    from dialect_tax.writer_page import dump_from_directory, import_submissions
+
+    cfg = load_config(config)
+    source = Path(dump)
+    data = dump_from_directory(source) if source.is_dir() else json.loads(source.read_text())
+    counts = import_submissions(data, cfg.variants_path, include_drafts=include_drafts)
+    typer.echo(json.dumps(counts))
+
+
 if __name__ == "__main__":
     app()

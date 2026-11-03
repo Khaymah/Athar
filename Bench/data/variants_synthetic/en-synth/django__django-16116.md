@@ -1,0 +1,2 @@
+`makemigrations --check` still writes the migration files. if you only want to check you have to pass `--check` plus `--dry-run`. that's inconsistent with `migrate --check` and `optimizemigration --check`, which just exit (maybe after some logging).
+I think `makemigrations --check` should just exit without making migrations. fwiw the writing-anyway behavior was never discussed in ticket #25604 or its django-developers thread, and the docs are currently silent on it.

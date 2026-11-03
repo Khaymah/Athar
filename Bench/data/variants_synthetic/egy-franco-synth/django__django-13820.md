@@ -1,0 +1,5 @@
+fe `django.db.migrations.loader` el `MigrationLoader.load_disk` bey3mel skip le ay migrations module `m` law `getattr(m, '__file__', None)` tele3 falsy.
+el check da aslan ma3mool 3ashan yerfod el PEP-420 namespace packages, bas el regular packages kaman momken mayb2ash fiha `__file__`. el Python import docs bet2ool en `__file__` optional w el import system momken yseebo unset (zay masalan module met7ammel men database).
+w da bybawwaz el donya fel frozen Python environments elly msh bet7ot `__file__` 3al regular packages: el migrations el mawgooda msh betetla2a 5ales (fi tickets mertabta #30950 w #32177).
+el `__path__` bta3 el namespace packages byb2a custom iterable msh `list` (el `_NamespacePath` bta3 CPython da implementation detail fa mate3tamedsh 3aleh). e2terahy enena nzawwed 3ala el `__file__` check da `and isinstance(m.__path__, list)`.
+bas 5alli balak: el namespace packages lazem tefdal marfooda lel migrations, w mafeesh ay taghyeer fel behavior fel envs el 3adeya, w men gheir ay features tanya lel frozen envs.

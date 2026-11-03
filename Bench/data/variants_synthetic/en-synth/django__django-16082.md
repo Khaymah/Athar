@@ -1,0 +1,1 @@
+when I combine query expressions with the `MOD` operator and the operand types differ (Decimal and Integer), the `output_field` doesn't get resolved. the other mathematical operators resolve a Decimal + Integer result to Decimal, but MOD doesn't. I'd expect MOD with Decimal and Integer operands to resolve to Decimal, same as the other operators.

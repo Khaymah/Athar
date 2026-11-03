@@ -1,0 +1,2 @@
+fel Forms, el `ErrorList` bta3et el non-field errors bta5od CSS class esmaha `nonfield` (w maktooba fel docs ta7t rendering form error messages), laken fel FormSets el non-form errors msh bta5od ay class zayaha.
+3ayzak tdeef CSS class esmaha `nonform` lel non-form errors bta3et el FormSet, 3ashan law 3andy custom `ErrorList` t2dar tfarra2 bein el field errors wel non-field errors (bta3et el forms) wel non-form errors (bta3et el FormSets). w wasa2 el `nonform` class di fel docs bardo 3ashan el developers ye3rafoha.

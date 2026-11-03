@@ -1,0 +1,4 @@
+in `django.db.migrations.loader`, `MigrationLoader.load_disk` skips a migrations module `m` whenever `getattr(m, '__file__', None)` is falsy. the point of that check is to reject PEP-420 namespace packages, but regular packages can lack `__file__` too. the Python import docs say `__file__` is optional and the import system may leave it unset (e.g. a module loaded from a database).
+this bites frozen Python environments that don't set `__file__` on regular packages: existing migrations just aren't found (related tickets #30950, #32177).
+namespace packages' `__path__` is a custom iterable, not a `list` (CPython's `_NamespacePath` is an implementation detail, don't rely on it). my proposal: augment the `__file__` check with `and isinstance(m.__path__, list)`.
+constraints: namespace packages must still be rejected for migrations, no behavior change in normal envs, and no other frozen-env features.

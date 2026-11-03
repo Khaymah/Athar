@@ -1,0 +1,2 @@
+in Forms, the non-field errors `ErrorList` gets a `nonfield` CSS class (documented under rendering form error messages), but in FormSets the non-form errors don't get any equivalent CSS class.
+can you add a `nonform` CSS class to FormSet non-form errors? the goal is that a custom `ErrorList` can tell apart field errors, non-field errors (forms) and non-form errors (FormSets). and please document the `nonform` class for developers too.

@@ -1,0 +1,2 @@
+في الـ Forms، الـ `ErrorList` بتاعة الـ non-field errors بتاخد CSS class اسمها `nonfield` (ومكتوبة في الـ docs تحت rendering form error messages)، لكن في الـ FormSets الـ non-form errors مش بتاخد أي class زيها.
+عايزك تضيف CSS class اسمها `nonform` للـ non-form errors بتاعة الـ FormSet، عشان لو عندي custom `ErrorList` تقدر تفرّق بين الـ field errors والـ non-field errors (بتاعة الـ forms) والـ non-form errors (بتاعة الـ FormSets). ووثّق الـ `nonform` class دي في الـ docs برضه عشان الـ developers يعرفوها.

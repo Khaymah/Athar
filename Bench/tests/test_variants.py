@@ -71,3 +71,13 @@ def test_arabic_ratio_ignores_inline_code():
 def test_heavily_code_switched_egyptian_passes(card, tmp_path):
     write(tmp_path, "egy", "صفحة الـ debug لسه بتعرض الـ RuntimeError حتى مع raise ValueError from None، الـ view ده [[A1]] والسبب [[A2]]")
     assert validate_variant("egy", card, tmp_path).ok
+
+
+def test_blind_variant_returns_text_verbatim_without_attachments(card, tmp_path):
+    text = "There is a bug in this repository. Find it and fix it.\n"
+    path = variant_path(tmp_path, "blind-synth", card.instance_id)
+    path.parent.mkdir(parents=True)
+    path.write_text(text)
+    inst = {"instance_id": card.instance_id, "problem_statement": "ORIGINAL"}
+    assert problem_statement("blind-synth", inst, card, tmp_path) == text
+    assert card.attachments  # the fixture has attachments, and none were appended

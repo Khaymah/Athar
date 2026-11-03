@@ -24,6 +24,10 @@ MIN_ARABIC_RATIO = 0.25
 # Model-written variants used only for the synthetic probe; never mixed with human data.
 SYNTHETIC_SUFFIX = "-synth"
 
+# Contamination control: a generic request with no task information and no attachments.
+# If a model still solves the task, it likely recognises the benchmark instance.
+BLIND_PREFIX = "blind"
+
 EXPECTED_SCRIPT = {
     "en": "latin",
     "msa": "arabic",
@@ -91,6 +95,8 @@ def problem_statement(variant: str, instance: dict, card: Card | None, variants_
     path = variant_path(variants_dir, variant, instance["instance_id"])
     if not path.exists():
         raise FileNotFoundError(path)
+    if variant.startswith(BLIND_PREFIX):
+        return path.read_text()
     return assemble(path.read_text(), card)
 
 

@@ -1,0 +1,51 @@
+# Contamination control: generic "find the bug" request (blind-synth) vs en-synth, same output dir as probe.
+# SYNTHETIC PROBE: model-written variants (data/variants_synthetic), for an early, unpublishable signal.
+# Every non-orig variant here is written by a language model from the same cards human writers use.
+name: probe-blind
+dataset: SWE-bench/SWE-bench_Verified
+split: test
+image_template: "ghcr.io/epoch-research/swe-bench.eval.x86_64.{instance_id}:latest"
+
+tasks_file: data/pilot_tasks.json
+cards_dir: data/cards
+variants_dir: data/variants_synthetic
+output_dir: runs/probe
+
+variants: [en-synth, blind-synth]
+reference_variant: en-synth
+runs_per_cell: 3
+
+models:
+  # Anthropic API directly (ANTHROPIC_API_KEY). litellm prices it, so MSWEA_GLOBAL_COST_LIMIT works.
+  - name: haiku-5.5
+    model_name: claude-haiku-5-5
+    model_class: litellm
+  - name: sonnet-5.5-direct
+    model_name: claude-sonnet-5-5
+    model_class: litellm
+  # OpenRouter free tier: dropped for now (key allows 50 free requests/day, about 1 agent run/day).
+  # To re-enable, uncomment and run with MSWEA_COST_TRACKING=ignore_errors.
+  # - name: nemotron-3-ultra-free
+  #   model_name: nvidia/nemotron-3-ultra-550b-a55b:free
+  #   model_class: openrouter
+  # - name: north-mini-code-free
+  #   model_name: cohere/north-mini-code:free
+  #   model_class: openrouter
+  - name: sonnet-5.5
+    model_name: anthropic/claude-sonnet-5.5
+    model_class: openrouter
+  - name: deepseek-v4.1-flash
+    model_name: deepseek/deepseek-v4.1-flash
+    model_class: openrouter
+
+agent:
+  step_limit: 100
+  cost_limit: 2.0
+  wall_time_seconds: 1800
+  command_timeout_seconds: 120
+
+eval:
+  timeout_seconds: 1800
+
+workers: 4
+cleanup_images: true

@@ -1,0 +1,1 @@
+right now Min() and Max() with no args raise `ValueError: The Max/Min functions must have arguments.` I'd like zero-arg Min() to return oo and zero-arg Max() to return -oo instead. that's what makes sense for the empty set in the extended reals: https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers

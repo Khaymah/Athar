@@ -1,0 +1,1 @@
+can you change the postgres backend client (django.db.backends.postgres.client, i.e. what dbshell uses) to launch psql with subprocess.run, and pass the password via PGPASSWORD in a custom env for the subprocess? subprocess.run exists since Python 3.5, which is already the minimum since Django 2.1. goal is simpler and more reliable code

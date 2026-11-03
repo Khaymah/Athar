@@ -1,0 +1,2 @@
+3ayez adeef option esmo --skip-checks lel management command bta3 runserver. keda hayeb2a consistent m3 ba2i el management commands elli btshaghal system checks.
+ana 3ayez el checks teshtaghal fel CI/CD bas, msh kol ma el dev server ye3mel reload astana 15-20 s. da so2al 3ala StackOverflow leeh 3ala2a: https://stackoverflow.com/questions/41438593/skip-system-checks-on-django-server-in-debug-mode-in-pycharm/41725866

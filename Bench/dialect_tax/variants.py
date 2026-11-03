@@ -17,6 +17,10 @@ from dialect_tax.config import ORIGINAL_VARIANT
 ARABIC_RE = re.compile(r"[؀-ۿ]")
 LATIN_RE = re.compile(r"[A-Za-z]")
 
+# Egyptian developers code-switch heavily (identifiers, error names), so Arabic letters can be
+# a minority of the characters in a perfectly natural dialect request.
+MIN_ARABIC_RATIO = 0.25
+
 EXPECTED_SCRIPT = {
     "en": "latin",
     "msa": "arabic",
@@ -112,7 +116,7 @@ def validate_variant(variant: str, card: Card, variants_dir: Path) -> Validation
 
     expected = EXPECTED_SCRIPT.get(variant)
     ratio = arabic_ratio(prose)
-    if expected == "arabic" and ratio < 0.5:
+    if expected == "arabic" and ratio < MIN_ARABIC_RATIO:
         result.errors.append(f"expected Arabic script, Arabic ratio is {ratio:.0%}")
     if expected == "latin" and ratio > 0.05:
         result.errors.append(f"expected Latin script, Arabic ratio is {ratio:.0%}")

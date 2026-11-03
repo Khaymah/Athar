@@ -183,14 +183,14 @@ def build_writer_page(config: str = CONFIG, template: str = "web/WriterApp.templ
 
 
 @app.command("import-submissions")
-def import_submissions_cmd(dump: str, config: str = CONFIG, include_drafts: bool = False):
+def import_submissions_cmd(dump: str, config: str = CONFIG, include_drafts: bool = False, accepted_only: bool = False):
     """Write writers' submitted texts into data/variants/. DUMP is a JSON file or an exported store directory."""
     from dialect_tax.writer_page import dump_from_directory, import_submissions
 
     cfg = load_config(config)
     source = Path(dump)
     data = dump_from_directory(source) if source.is_dir() else json.loads(source.read_text())
-    counts = import_submissions(data, cfg.variants_path, include_drafts=include_drafts)
+    counts = import_submissions(data, cfg.variants_path, include_drafts=include_drafts, accepted_only=accepted_only)
     typer.echo(json.dumps(counts))
 
 

@@ -55,8 +55,24 @@ def test_import_writes_only_submitted_canonical_texts(tmp_path):
         },
     }
     counts = import_submissions(dump, tmp_path)
-    assert counts == {"written": 1, "skipped_not_submitted": 1, "missing_text": 0}
+    assert counts == {"written": 1, "skipped_not_submitted": 1, "skipped_not_accepted": 0, "missing_text": 0}
     assert (tmp_path / "egy-franco" / "a__b-1.md").read_text() == "lama bashaghalo\n"
     assert (tmp_path / "en" / "a__b-1.md").read_text() == "When I run it\n"
     assert not (tmp_path / "en" / "a__b-2.md").exists()
     assert json.loads((tmp_path / "provenance.json").read_text())["a__b-1"]["writer"] == "u_1"
+
+
+def test_accepted_only_uses_review_and_records_it(tmp_path):
+    dump = {
+        "claims": {
+            "a__b-1": {"uid": "u_1", "status": "submitted", "review": {"status": "accepted", "by": "u_9"}},
+            "a__b-2": {"uid": "u_1", "status": "submitted", "review": {"status": "changes", "by": "u_9"}},
+            "a__b-3": {"uid": "u_1", "status": "submitted"},
+        },
+        "subs": {"u_1": {k: {"en": "text " + k, "status": "submitted"} for k in ("a__b-1", "a__b-2", "a__b-3")}},
+        "reviews": {"u_9": {"a__b-1": {"verdict": "accepted", "notes": "good"}}},
+    }
+    counts = import_submissions(dump, tmp_path, accepted_only=True)
+    assert counts["written"] == 1 and counts["skipped_not_accepted"] == 2
+    prov = json.loads((tmp_path / "provenance.json").read_text())
+    assert prov["a__b-1"]["review"]["detail"]["notes"] == "good"

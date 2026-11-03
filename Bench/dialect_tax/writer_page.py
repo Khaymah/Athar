@@ -5,6 +5,10 @@ writers cannot translate. Submissions live in the artifact's shared store:
 
     claims/<instance_id>                 {uid, status: "claimed" | "submitted", at}
     subs/<uid>/tasks/<instance_id>       {en, egy, franco, status, updatedAt}
+    reviews/<uid>/items/<instance_id>    {writer, claimAt, variants, notes, verdict, at}
+
+A reviewer's verdict is mirrored into claims/<id>.review = {status, by, at}; a writer's
+re-submission rewrites the claim and so clears it.
 """
 
 from __future__ import annotations
@@ -56,10 +60,15 @@ def dump_from_directory(root: Path) -> dict:
     subs: dict[str, dict] = {}
     for p in sorted((root / "subs").glob("*/tasks/*.json")):
         subs.setdefault(p.parent.parent.name, {})[p.stem] = _doc_body(json.loads(p.read_text()))
-    return {"claims": claims, "subs": subs}
+    reviews: dict[str, dict] = {}
+    for p in sorted((root / "reviews").glob("*/items/*.json")):
+        reviews.setdefault(p.parent.parent.name, {})[p.stem] = _doc_body(json.loads(p.read_text()))
+    return {"claims": claims, "subs": subs, "reviews": reviews}
 
 
-def import_submissions(dump: dict, variants_dir: Path, *, include_drafts: bool = False) -> dict[str, int]:
+def import_submissions(
+    dump: dict, variants_dir: Path, *, include_drafts: bool = False, accepted_only: bool = False
+) -> dict[str, int]:
     """Write submitted texts to data/variants/<variant>/<id>.md and record who wrote what.
 
     ``dump`` = {"claims": {iid: {...}}, "subs": {uid: {iid: {...}}}} as pulled from the store.
@@ -69,7 +78,8 @@ def import_submissions(dump: dict, variants_dir: Path, *, include_drafts: bool =
     subs: dict = dump.get("subs", {})
     provenance_path = variants_dir / "provenance.json"
     provenance = json.loads(provenance_path.read_text()) if provenance_path.exists() else {}
-    counts = {"written": 0, "skipped_not_submitted": 0, "missing_text": 0}
+    reviews: dict = dump.get("reviews", {})
+    counts = {"written": 0, "skipped_not_submitted": 0, "skipped_not_accepted": 0, "missing_text": 0}
 
     for iid, claim in sorted(claims.items()):
         uid = claim.get("uid")
@@ -80,6 +90,10 @@ def import_submissions(dump: dict, variants_dir: Path, *, include_drafts: bool =
         if doc.get("status") != "submitted" and not include_drafts:
             counts["skipped_not_submitted"] += 1
             continue
+        review = claim.get("review") or {}
+        if accepted_only and review.get("status") != "accepted":
+            counts["skipped_not_accepted"] += 1
+            continue
         for field, variant in PAGE_FIELD_TO_VARIANT.items():
             text = (doc.get(field) or "").strip()
             if not text:
@@ -87,7 +101,13 @@ def import_submissions(dump: dict, variants_dir: Path, *, include_drafts: bool =
             path = variant_path(variants_dir, variant, iid)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text + "\n")
-        provenance[iid] = {"writer": uid, "status": doc.get("status"), "updated_at": doc.get("updatedAt")}
+        detail = reviews.get(review.get("by"), {}).get(iid) if review else None
+        provenance[iid] = {
+            "writer": uid,
+            "status": doc.get("status"),
+            "updated_at": doc.get("updatedAt"),
+            "review": {"status": review.get("status"), "by": review.get("by"), "detail": detail} if review else None,
+        }
         counts["written"] += 1
 
     provenance_path.parent.mkdir(parents=True, exist_ok=True)

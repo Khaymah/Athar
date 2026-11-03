@@ -51,6 +51,30 @@ select { padding: 0 10px; min-width: 0; }
 #barSubmitted { background: var(--ok); } #barClaimed { background: var(--warn); }
 .textbtn { font: inherit; font-size: 0.82rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 4px; }
 .textbtn:hover { color: var(--fg); }
+.modes { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; height: 36px; }
+.modes button { font: inherit; font-size: 0.88rem; padding: 0 14px; border: none; background: var(--raised); color: var(--muted); cursor: pointer; }
+.modes button + button { border-inline-start: 1px solid var(--line); }
+.modes button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.readonly { border: 1px solid var(--line); border-radius: 6px; background: var(--sunken); padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 80px; }
+.readonly[dir="ltr"] { font-family: var(--font-mono); font-size: 0.88rem; text-align: left; }
+.review-form { display: flex; flex-direction: column; gap: 14px; }
+.qlabel { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.qlabel .textbtn { font-weight: 400; color: var(--accent); }
+ul.unit-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+ul.unit-checks label { display: grid; grid-template-columns: 18px 22px minmax(0, 1fr); gap: 6px; align-items: start; font-size: 0.88rem; cursor: pointer; }
+ul.unit-checks .n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); padding-top: 3px; }
+.scale { display: flex; gap: 6px; flex-wrap: wrap; }
+.scale label { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 2px 10px; font-size: 0.85rem; cursor: pointer; background: var(--raised); }
+.scale input:checked + span { color: var(--accent); font-weight: 600; }
+.scale-ends { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); max-width: 360px; }
+.check-row { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; cursor: pointer; }
+.banner { margin: 12px 16px 0; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); font-size: 0.88rem; display: flex; flex-direction: column; gap: 4px; }
+.banner.ok { border-inline-start: 3px solid var(--ok); }
+.banner.changes { border-inline-start: 3px solid var(--warn); }
+.banner ul { margin: 0; padding-inline-start: 18px; }
+.verdict { font-size: 0.85rem; font-weight: 600; }
+.verdict.ok { color: var(--ok); } .verdict.changes { color: var(--warn); } .verdict.pending { color: var(--muted); font-weight: 400; }
+textarea.notes { min-height: 90px; font-size: 0.9rem; }
 
 .notice { margin-top: 12px; padding: 9px 14px; border-radius: 6px; background: var(--raised); border: 1px solid var(--line); border-inline-start: 3px solid var(--warn); font-size: 0.9rem; }
 
@@ -120,14 +144,13 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
 <header class="bar">
   <div class="wrap">
     <div class="brand">ورشة ضريبة اللهجة<small>طلبات bugs حقيقية، بالإنجليزي والمصري والفرانكو</small></div>
+    <div class="modes" role="group" aria-label="الوضع">
+      <button type="button" data-mode="write" aria-pressed="true">كتابة</button>
+      <button type="button" data-mode="review" aria-pressed="false">مراجعة</button>
+    </div>
     <div class="picker">
       <label for="filterSelect" class="pos">عرض</label>
-      <select id="filterSelect">
-        <option value="all">كل التاسكات</option>
-        <option value="free">المتاح للحجز</option>
-        <option value="mine">بتاعي</option>
-        <option value="done">اللي اتسلّم</option>
-      </select>
+      <select id="filterSelect"></select>
       <button class="iconbtn" id="prevBtn" type="button" aria-label="التاسك اللي قبله">→</button>
       <select id="taskSelect" aria-label="اختار تاسك"></select>
       <button class="iconbtn" id="nextBtn" type="button" aria-label="التاسك اللي بعده">←</button>
@@ -178,7 +201,13 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
   const taskLabel = c => `${projectName(c.repo)} #${c.instance_id.split("-").pop()}`;
   const $ = id => document.getElementById(id);
 
-  const state = { uid: null, canWrite: null, db: null, dbReady: false, claims: {}, mine: {}, selected: null, filter: "all", tab: "en" };
+  const state = { uid: null, canWrite: null, db: null, dbReady: false, claims: {}, mine: {}, selected: null, filter: "all", tab: "en", mode: "write" };
+  const FILTERS = {
+    write: [["all", "كل التاسكات"], ["free", "المتاح للحجز"], ["mine", "بتاعي"], ["done", "اللي اتسلّم"]],
+    review: [["pending", "مستني مراجعة"], ["reviewed", "راجعته أنا"], ["submitted", "كل المتسلّم من غيري"]],
+  };
+  const NATURAL = ["", "مترجم ومتكلّف", "فيه تكلّف واضح", "مقبول", "طبيعي", "طبيعي جداً"];
+  const reviewCache = {}, writerCache = {};
   const store = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
@@ -210,14 +239,40 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     free: ["", "متاح للحجز"], mine: ["mine", "محجوز لك"], taken: ["", "مع كاتب تاني"],
     "done-mine": ["done", "سلّمته"], done: ["done", "اتسلّم"],
   };
+  const reviewOf = id => (state.claims[id] && state.claims[id].review) || null;
+  function statusInfo(id) {
+    const s = taskStatus(id), r = reviewOf(id);
+    if ((s === "done" || s === "done-mine") && r) {
+      if (r.status === "accepted") return ["done", "اتقبل"];
+      return ["mine", "محتاج تعديل"];
+    }
+    if (s === "done" || s === "done-mine") return ["done", state.mode === "review" ? "مستني مراجعة" : STATUS[s][1]];
+    return STATUS[s];
+  }
+  const reviewable = id => taskStatus(id) === "done";
   function visibleTasks() {
     return CARDS.filter(c => {
-      const s = taskStatus(c.instance_id);
-      if (state.filter === "free") return s === "free";
-      if (state.filter === "mine") return s === "mine" || s === "done-mine";
-      if (state.filter === "done") return s === "done" || s === "done-mine";
-      return true;
+      const id = c.instance_id, s = taskStatus(id), r = reviewOf(id);
+      switch (state.filter) {
+        case "free": return s === "free";
+        case "mine": return s === "mine" || s === "done-mine";
+        case "done": return s === "done" || s === "done-mine";
+        case "pending": return reviewable(id) && !r;
+        case "reviewed": return reviewable(id) && r && r.by === state.uid;
+        case "submitted": return reviewable(id);
+        default: return true;
+      }
     });
+  }
+  function renderFilters() {
+    const sel = $("filterSelect");
+    sel.textContent = "";
+    for (const [value, label] of FILTERS[state.mode]) {
+      const o = document.createElement("option"); o.value = value; o.textContent = label; sel.append(o);
+    }
+    sel.value = state.filter;
+    document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
+    $("editorPane").setAttribute("aria-label", state.mode === "review" ? "المراجعة" : "الكتابة");
   }
 
   function renderMeter() {
@@ -241,7 +296,7 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     for (const c of list) {
       const o = document.createElement("option");
       o.value = c.instance_id;
-      o.textContent = `${taskLabel(c)}  ·  ${STATUS[taskStatus(c.instance_id)][1]}`;
+      o.textContent = `${taskLabel(c)}  ·  ${statusInfo(c.instance_id)[1]}`;
       sel.append(o);
     }
     const idx = list.findIndex(c => c.instance_id === state.selected);
@@ -271,8 +326,9 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     $("briefTitle").textContent = taskLabel(card);
     $("briefTitle").title = id;
     const chip = $("statusChip");
-    chip.className = "chip " + STATUS[s][0];
-    chip.textContent = STATUS[s][1];
+    const [chipCls, chipText] = statusInfo(id);
+    chip.className = "chip " + chipCls;
+    chip.textContent = chipText;
 
     const unitsBox = document.createElement("div");
     const h = document.createElement("h3"); h.textContent = "اللي لازم طلبك يوصّله (كله، ومن غير زيادة)";
@@ -305,6 +361,7 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     }
   }
 
+  const MIN_ARABIC = 0.25;
   const ARABIC = /[؀-ۿ]/g, LATIN = /[A-Za-z]/g, PH = /\[\[A(\d+)\]\]/g;
   const stripCode = t => t.replace(PH, "").replace(/`[^`]*`/g, "");
   function arabicRatio(t) {
@@ -323,7 +380,7 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     const missing = [...ids].filter(n => !refs.includes(n));
     if (missing.length) out.push({ level: "warn", msg: "مرفقات مش مستخدمة (هتتحط في الآخر): " + missing.map(n => `[[A${n}]]`).join("، ") });
     const r = arabicRatio(text);
-    if (v.script === "arabic" && r < 0.5) out.push({ level: "bad", msg: "المفروض يكون بحروف عربي" });
+    if (v.script === "arabic" && r < MIN_ARABIC) out.push({ level: "bad", msg: "المفروض يكون بحروف عربي (الكلام نفسه، مش أسماء الكود)" });
     if (v.script === "latin" && r > 0.05) out.push({ level: "bad", msg: "المفروض يكون بحروف لاتيني بس" });
     for (const a of card.attachments) {
       const line = a.text.split("\n").map(s => s.trim()).find(s => s.length > 20 && !s.startsWith("```"));
@@ -342,6 +399,7 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
   let working = null;
 
   function renderEditor() {
+    if (state.mode === "review") return renderReview();
     const id = state.selected, pane = $("editorPane");
     pane.textContent = "";
     if (!id) return;
@@ -364,6 +422,7 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     ]) { const li = document.createElement("li"); li.textContent = t; ul.append(li); }
     rules.append(rs, ul);
     pane.append(rules);
+    if (s === "done-mine" && reviewOf(id)) pane.append(feedbackBanner(id));
 
     if (!editable) {
       working = null;
@@ -450,6 +509,219 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     pane.append(foot);
   }
 
+  function gatePane(pane, title, text) {
+    const gate = div("gate");
+    const strong = document.createElement("strong"), p = document.createElement("p");
+    strong.textContent = title; p.textContent = text;
+    gate.append(strong, p); pane.append(gate);
+    return gate;
+  }
+
+  async function loadReview(by, id) {
+    const key = `${by}:${id}`;
+    if (!(key in reviewCache)) {
+      try { const snap = await state.db.doc(`reviews/${by}/items/${id}`).get(); reviewCache[key] = snap.exists ? snap.data() : null; }
+      catch { return null; }
+    }
+    return reviewCache[key];
+  }
+
+  function feedbackBanner(id) {
+    const r = reviewOf(id);
+    const box = div("banner " + (r.status === "accepted" ? "ok" : "changes"));
+    const head = document.createElement("strong");
+    head.textContent = r.status === "accepted" ? "المراجع قبل التلات صيغ. شكراً!" : "المراجع شايف إن فيه حاجات محتاجة تعديل:";
+    box.append(head);
+    if (r.status !== "accepted" && state.db) {
+      const wait = document.createElement("span"); wait.className = "status-line"; wait.textContent = "بحمّل الملاحظات...";
+      box.append(wait);
+      loadReview(r.by, id).then(rev => {
+        wait.remove();
+        if (!rev) { box.append(document.createTextNode("مقدرتش أجيب تفاصيل المراجعة.")); return; }
+        const ul = document.createElement("ul");
+        for (const v of VARIANTS) {
+          const f = rev.variants && rev.variants[v.key];
+          if (!f) continue;
+          const missing = (f.units || []).map((ok, i) => ok ? null : AR(i + 1)).filter(Boolean);
+          const issues = [];
+          if (missing.length) issues.push("نقط ناقصة: " + missing.join("، "));
+          if (f.extra) issues.push("فيه معلومة زيادة");
+          if (f.natural && f.natural < 3) issues.push("النص مش طبيعي كفاية (" + AR(f.natural) + " من ٥)");
+          if (issues.length) { const li = document.createElement("li"); li.textContent = `${v.label}: ${issues.join(" · ")}`; ul.append(li); }
+        }
+        if (ul.children.length) box.append(ul);
+        if (rev.notes) { const n = document.createElement("div"); n.textContent = "ملاحظات: " + rev.notes; box.append(n); }
+        const tip = document.createElement("span"); tip.className = "status-line"; tip.textContent = "عدّل وسلّم تاني، والتاسك هيرجع يستنى مراجعة.";
+        box.append(tip);
+      });
+    }
+    return box;
+  }
+
+  let reviewForm = null;
+  const blankVariant = card => ({ units: card.units.map(() => false), extra: false, natural: 0 });
+  const variantVerdict = f => !f.natural ? "pending" : (f.units.every(Boolean) && !f.extra && f.natural >= 3) ? "ok" : "changes";
+  function overallVerdict() {
+    const vs = VARIANTS.map(v => variantVerdict(reviewForm.variants[v.key]));
+    if (vs.includes("pending")) return "pending";
+    return vs.every(x => x === "ok") ? "accepted" : "changes";
+  }
+
+  function renderReview() {
+    const id = state.selected, pane = $("editorPane");
+    pane.textContent = "";
+    if (!id) return;
+    const card = BY_ID[id], s = taskStatus(id), claim = state.claims[id];
+    if (!state.db || !state.uid) return gatePane(pane, "محتاج تسجيل دخول", "افتح الصفحة وإنت مسجّل دخول عشان تراجع.");
+    if (s === "done-mine" || (claim && claim.uid === state.uid)) return gatePane(pane, "ده تاسك إنت كاتبه", "المراجعة لازم تكون من حد تاني. اختار تاسك كاتبه حد غيرك.");
+    if (!reviewable(id)) return gatePane(pane, "التاسك ده لسه متسلّمش", "اختار من \"مستني مراجعة\" في الشريط اللي فوق.");
+    if (state.canWrite === false) return gatePane(pane, "صلاحيتك قراءة بس", "اطلب من صاحب الصفحة يخليك Contributor عشان تقدر تراجع.");
+
+    const wkey = `${claim.uid}:${id}:${claim.at}`;
+    if (!(wkey in writerCache)) {
+      gatePane(pane, "بحمّل النصوص...", "");
+      state.db.doc(`subs/${claim.uid}/tasks/${id}`).get()
+        .then(snap => { writerCache[wkey] = snap.exists ? snap.data() : null; })
+        .catch(() => { writerCache[wkey] = null; })
+        .then(() => { if (state.selected === id && state.mode === "review") renderReview(); });
+      return;
+    }
+    const writer = writerCache[wkey];
+    if (!writer) return gatePane(pane, "مقدرتش أجيب النصوص", "جرّب تعمل refresh للصفحة.");
+
+    if (!reviewForm || reviewForm.id !== id) {
+      reviewForm = { id, loading: true, variants: Object.fromEntries(VARIANTS.map(v => [v.key, blankVariant(card)])), notes: "" };
+      loadReview(state.uid, id).then(prev => {
+        if (!reviewForm || reviewForm.id !== id) return;
+        if (prev && prev.claimAt === claim.at && prev.variants) {
+          for (const v of VARIANTS) if (prev.variants[v.key] && prev.variants[v.key].units && prev.variants[v.key].units.length === card.units.length) reviewForm.variants[v.key] = { ...prev.variants[v.key] };
+          reviewForm.notes = prev.notes || "";
+        }
+        reviewForm.loading = false;
+        if (state.selected === id && state.mode === "review") renderReview();
+      });
+    }
+
+    const tabs = div("tabs", { role: "tablist" });
+    for (const v of VARIANTS) {
+      const t = document.createElement("button");
+      t.type = "button"; t.className = "tab"; t.setAttribute("role", "tab");
+      t.setAttribute("aria-selected", String(state.tab === v.key));
+      const vv = variantVerdict(reviewForm.variants[v.key]);
+      const dot = document.createElement("span"); dot.className = "dot " + (vv === "pending" ? "" : vv === "ok" ? "ok" : "warn");
+      t.append(dot, document.createTextNode(v.label));
+      t.addEventListener("click", () => { state.tab = v.key; renderReview(); });
+      tabs.append(t);
+    }
+    pane.append(tabs);
+
+    const v = VARIANTS.find(x => x.key === state.tab);
+    const form = reviewForm.variants[v.key];
+    const ed = div("editor");
+    const text = inlineRich(writer[v.key] || "", div("readonly", { dir: v.dir }));
+    ed.append(text);
+
+    const rf = div("review-form");
+    const q1 = document.createElement("div");
+    const l1 = div("qlabel"); l1.append(document.createTextNode("أنهي نقط موجودة في النص ده؟"));
+    const all = document.createElement("button"); all.type = "button"; all.className = "textbtn"; all.textContent = "كلها موجودة";
+    all.addEventListener("click", () => { form.units = form.units.map(() => true); renderReview(); });
+    l1.append(all);
+    const ul = document.createElement("ul"); ul.className = "unit-checks";
+    card.units.forEach((u, i) => {
+      const li = document.createElement("li"), lab = document.createElement("label");
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!form.units[i]; cb.id = `uc-${v.key}-${i}`;
+      cb.addEventListener("change", () => { form.units[i] = cb.checked; refreshVerdict(); });
+      const n = document.createElement("span"); n.className = "n"; n.textContent = AR(i + 1);
+      const txt = inlineRich((card.units_ar && card.units_ar[i]) || u, document.createElement("span"));
+      lab.append(cb, n, txt); li.append(lab); ul.append(li);
+    });
+    q1.append(l1, ul);
+
+    const extra = document.createElement("label"); extra.className = "check-row";
+    const ecb = document.createElement("input"); ecb.type = "checkbox"; ecb.checked = !!form.extra; ecb.id = `extra-${v.key}`;
+    ecb.addEventListener("change", () => { form.extra = ecb.checked; refreshVerdict(); });
+    extra.append(ecb, document.createTextNode("فيه معلومة زيادة مش موجودة في النقط"));
+
+    const q3 = document.createElement("div");
+    const l3 = div("qlabel"); l3.textContent = "قد إيه النص ده طبيعي؟ (لو إنت كاتبه لـ agent، هتكتبه كده؟)";
+    const scale = div("scale", { role: "radiogroup" });
+    for (let n = 1; n <= 5; n++) {
+      const lab = document.createElement("label"); lab.title = NATURAL[n];
+      const r = document.createElement("input"); r.type = "radio"; r.name = "natural-" + v.key; r.value = String(n); r.checked = form.natural === n;
+      r.addEventListener("change", () => { form.natural = n; renderReview(); });
+      const sp = document.createElement("span"); sp.textContent = AR(n);
+      lab.append(r, sp); scale.append(lab);
+    }
+    const ends = div("scale-ends"); ends.append(Object.assign(document.createElement("span"), { textContent: "١ = " + NATURAL[1] }), Object.assign(document.createElement("span"), { textContent: "٥ = " + NATURAL[5] }));
+    q3.append(l3, scale, ends);
+
+    const q4 = document.createElement("div");
+    const l4 = div("qlabel"); l4.textContent = "ملاحظات للكاتب (اختياري، لكل الصيغ)";
+    const notes = document.createElement("textarea"); notes.className = "notes"; notes.id = "review-notes"; notes.value = reviewForm.notes;
+    notes.addEventListener("input", () => { reviewForm.notes = notes.value; });
+    q4.append(l4, notes);
+
+    rf.append(q1, extra, q3, q4);
+    ed.append(rf);
+    pane.append(ed);
+
+    const foot = div("foot");
+    const verdict = document.createElement("span"); verdict.id = "verdictLine";
+    const actions = div("actions");
+    const send = button("سلّم المراجعة", () => submitReview(id));
+    send.id = "sendReview";
+    actions.append(send);
+    foot.append(verdict, actions);
+    pane.append(foot);
+    refreshVerdict();
+  }
+
+  function refreshVerdict() {
+    const el = $("verdictLine"), send = $("sendReview");
+    if (!el || !reviewForm) return;
+    const v = overallVerdict();
+    el.className = "verdict " + (v === "accepted" ? "ok" : v);
+    el.textContent = v === "pending" ? "قيّم طبيعية النص في التلات صيغ الأول" : v === "accepted" ? "الحكم: اتقبل" : "الحكم: محتاج تعديل";
+    send.disabled = v === "pending" || reviewForm.loading;
+    document.querySelectorAll(".tabs .tab .dot").forEach((d, i) => {
+      const vv = variantVerdict(reviewForm.variants[VARIANTS[i].key]);
+      d.className = "dot " + (vv === "pending" ? "" : vv === "ok" ? "ok" : "warn");
+    });
+  }
+
+  async function submitReview(id) {
+    const claim = state.claims[id];
+    if (!claim || !reviewForm || reviewForm.id !== id) return;
+    const verdict = overallVerdict();
+    if (verdict === "pending") return;
+    const body = { writer: claim.uid, claimAt: claim.at, variants: reviewForm.variants, notes: reviewForm.notes.trim(), verdict, at: Date.now() };
+    try {
+      await state.db.doc(`reviews/${state.uid}/items/${id}`).set(body);
+      reviewCache[`${state.uid}:${id}`] = body;
+      await state.db.doc("claims/" + id).update({ review: { status: verdict, by: state.uid, at: body.at } });
+      toast(verdict === "accepted" ? "اتسلّمت المراجعة: اتقبل" : "اتسلّمت المراجعة: محتاج تعديل");
+      reviewForm = null;
+      const next = visibleTasks().find(c => c.instance_id !== id);
+      if (next) select(next.instance_id);
+    } catch (e) {
+      if (e && e.code === "invalid_argument") toast("مقدرتش أسجّل المراجعة. ممكن الكاتب سحب التاسك أو صلاحيتك قراءة بس.");
+      else toast("المراجعة متسجّلتش. جرّب تاني.");
+    }
+  }
+
+  function setMode(mode) {
+    if (state.mode === mode) return;
+    state.mode = mode;
+    state.filter = FILTERS[mode][0][0];
+    state.tab = "en"; working = null; reviewForm = null;
+    renderFilters();
+    const list = visibleTasks();
+    if (list.length && !list.some(c => c.instance_id === state.selected)) select(list[0].instance_id);
+    else { renderPicker(); renderBrief(); renderEditor(); }
+  }
+  document.querySelectorAll(".modes button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+
   function button(text, onClick, ghost) {
     const b = document.createElement("button"); b.type = "button"; b.className = "btn" + (ghost ? " ghost" : "");
     b.textContent = text; b.addEventListener("click", onClick); return b;
@@ -521,7 +793,7 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
 
   function select(id) {
     if (!id || !BY_ID[id]) return;
-    if (state.selected !== id) { state.tab = "en"; working = null; }
+    if (state.selected !== id) { state.tab = "en"; working = null; reviewForm = null; }
     state.selected = id;
     store.set("dt-selected", id);
     renderPicker(); renderBrief(); renderEditor();
@@ -545,6 +817,7 @@ textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focu
     if (!editingNow()) renderEditor();
   }
 
+  renderFilters();
   const saved = store.get("dt-selected", null);
   select(BY_ID[saved] ? saved : CARDS[0].instance_id);
 

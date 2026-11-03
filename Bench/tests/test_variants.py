@@ -66,3 +66,8 @@ def test_validate_warns_on_missing_placeholder(card, tmp_path):
 
 def test_arabic_ratio_ignores_inline_code():
     assert arabic_ratio("الـ `some_long_identifier_name()` بيضرب") == 1.0
+
+
+def test_heavily_code_switched_egyptian_passes(card, tmp_path):
+    write(tmp_path, "egy", "صفحة الـ debug لسه بتعرض الـ RuntimeError حتى مع raise ValueError from None، الـ view ده [[A1]] والسبب [[A2]]")
+    assert validate_variant("egy", card, tmp_path).ok

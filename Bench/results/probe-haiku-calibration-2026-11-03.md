@@ -1,0 +1,24 @@
+> **SYNTHETIC-variant results.** Non-orig variants are model-written dialect (data/variants_synthetic), not human text. Unpublishable; early signal only. Step: Haiku 5.5 calibration, 5 tasks x 4 variants x 1 repeat, 2026-11-03.
+
+# Dialect Tax report
+
+Reference variant: `en-synth`. Tax = reference resolve rate minus variant resolve rate, in percentage points (pp), paired by task.
+
+## haiku-5.5
+
+| Variant | Tasks | Resolve % | Tax (pp) | 95% CI | p | MDE (pp) | Cost/run $ | Steps/run |
+|---|---|---|---|---|---|---|---|---|
+| orig | 5 | 80.0 | 0.0 | [0.0, 0.0] | 1.000 | 0.0 | 0.002 | 6.4 |
+| **en-synth** | 5 | 80.0 | — | — | — | — | 0.003 | 7.6 |
+| egy-synth | 5 | 100.0 | -20.0 | [-60.0, 0.0] | 1.000 | 56.0 | 0.002 | 6.4 |
+| egy-franco-synth | 5 | 80.0 | 0.0 | [0.0, 0.0] | 1.000 | 0.0 | 0.002 | 5.8 |
+
+## Cost
+
+Total agent cost so far: $0.05 over 20 cells ($0.002/cell).
+
+## How to read this
+
+- **Tax > 0** means the agent solves fewer tasks in that variant than in the reference.
+- The **95% CI** comes from a paired bootstrap over tasks. If it includes 0, the pilot cannot distinguish the tax from noise.
+- **MDE** is the smallest tax this many tasks can reliably detect (80% power). Use it to size the next round.

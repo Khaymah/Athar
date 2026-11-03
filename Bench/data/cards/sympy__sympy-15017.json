@@ -21,5 +21,12 @@
       "text": "```python\n>>> import numpy\n>>> numpy.asarray(1).size\n1\n```"
     }
   ],
-  "original_prose": "`len` of rank-0 arrays returns 0\n`sympy.tensor.array.NDimArray.__len__` always returns zero for rank-0 arrays (scalars). I believe the correct value should be one, which is the number of elements of the iterator and the observed behaviour in numpy.\n\n[[A1]]\nIn numpy we have the following: \n\n[[A2]]\n\nThis was tested in sympy 1.2-rc1 running in Python 3.6.6\n`len` of rank-0 arrays returns 0\n`sympy.tensor.array.NDimArray.__len__` always returns zero for rank-0 arrays (scalars). I believe the correct value should be one, which is the number of elements of the iterator and the observed behaviour in numpy.\n\n[[A1]]\nIn numpy we have the following: \n\n[[A2]]\n\nThis was tested in sympy 1.2-rc1 running in Python 3.6.6"
+  "original_prose": "`len` of rank-0 arrays returns 0\n`sympy.tensor.array.NDimArray.__len__` always returns zero for rank-0 arrays (scalars). I believe the correct value should be one, which is the number of elements of the iterator and the observed behaviour in numpy.\n\n[[A1]]\nIn numpy we have the following: \n\n[[A2]]\n\nThis was tested in sympy 1.2-rc1 running in Python 3.6.6\n`len` of rank-0 arrays returns 0\n`sympy.tensor.array.NDimArray.__len__` always returns zero for rank-0 arrays (scalars). I believe the correct value should be one, which is the number of elements of the iterator and the observed behaviour in numpy.\n\n[[A1]]\nIn numpy we have the following: \n\n[[A2]]\n\nThis was tested in sympy 1.2-rc1 running in Python 3.6.6",
+  "units_ar": [
+    "الدالة `sympy.tensor.array.NDimArray.__len__` تُرجع دائمًا `0` للمصفوفات من الرتبة صفر (rank-0)، أي المصفوفات العددية (scalar).",
+    "مثال إعادة الإنتاج في [[A1]]: `len` لـ `Array` عددي يعطي 0، بينما المرور عليه (iteration) يعطي عنصرًا واحدًا.",
+    "المتوقع أن تكون قيمة `len` هي 1، أي عدد العناصر التي يعطيها الـ iterator، وهو نفس سلوك numpy.",
+    "المقارنة مع سلوك numpy موجودة في [[A2]].",
+    "تمت التجربة على sympy 1.2-rc1 مع Python 3.6.6."
+  ]
 }

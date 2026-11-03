@@ -37,5 +37,13 @@
       "text": "In [8]: Book.objects.annotate(idx=F(\"id\")).aggregate(x=Coalesce(Sum(\"id\"), 0))\nOut[8]: {'x': 4560}"
     }
   ],
-  "original_prose": "aggregate() with 'default' after annotate() crashes.\nDescription\n\t\nI saw this on a PostgreSQL project and reproduced it with SQLite. Django 4.0.1.\nAnnotate (anything) then aggregate works fine:\n[[A1]]\nPython 3.10.2 (main, Jan 21 2022, 19:45:54) [Clang 13.0.0 (clang-1300.0.29.30)]\nType 'copyright', 'credits' or 'license' for more information\nIPython 7.30.1 -- An enhanced Interactive Python. Type '?' for help.\n[[A2]]\nBut add the aggregate classes’ default argument (new in 4.0), and it breaks:\n[[A3]]\nThe generated SQL:\n[[A4]]\nThe “long form” using Coalesce works:\n[[A5]]"
+  "original_prose": "aggregate() with 'default' after annotate() crashes.\nDescription\n\t\nI saw this on a PostgreSQL project and reproduced it with SQLite. Django 4.0.1.\nAnnotate (anything) then aggregate works fine:\n[[A1]]\nPython 3.10.2 (main, Jan 21 2022, 19:45:54) [Clang 13.0.0 (clang-1300.0.29.30)]\nType 'copyright', 'credits' or 'license' for more information\nIPython 7.30.1 -- An enhanced Interactive Python. Type '?' for help.\n[[A2]]\nBut add the aggregate classes’ default argument (new in 4.0), and it breaks:\n[[A3]]\nThe generated SQL:\n[[A4]]\nThe “long form” using Coalesce works:\n[[A5]]",
+  "units_ar": [
+    "استدعاء `aggregate()` مع المعامل `default` الخاص بالدوال التجميعية (الجديد في 4.0) ينهار إذا جاء بعد `annotate()`، في Django 4.0.1.",
+    "ظهرت المشكلة على PostgreSQL وأمكن تكرارها على SQLite، وبدأت الجلسة بالأمر الموجود في [[A1]].",
+    "الحالة الأساسية تعمل: `annotate(idx=F(\"id\"))` ثم `aggregate(Sum(\"id\"))` يعيد المجموع بشكل صحيح [[A2]].",
+    "عند إضافة `default=0` إلى `Sum` يظهر الخطأ `OperationalError: near \"FROM\": syntax error` [[A3]].",
+    "استعلام SQL المُولَّد يحتوي على `SELECT` خارجي فارغ قبل `FROM (...) subquery` [[A4]].",
+    "الصيغة الطويلة `Coalesce(Sum(\"id\"), 0)` تعمل وتعيد النتيجة نفسها [[A5]]."
+  ]
 }

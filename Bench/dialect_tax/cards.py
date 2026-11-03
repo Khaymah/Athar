@@ -36,6 +36,8 @@ class Card:
     units: list[str] = field(default_factory=list)
     attachments: list[Attachment] = field(default_factory=list)
     original_prose: str = ""
+    units_ar: list[str] = field(default_factory=list)
+    """Arabic (MSA) gloss of each unit, same order. Shown to writers to aid understanding only."""
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), ensure_ascii=False, indent=2)

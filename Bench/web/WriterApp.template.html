@@ -2,135 +2,141 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: sticky header, then a two-pane workbench (task list | writing desk) that stacks on phones. */
+/* Layout: sticky task bar on top; below it two columns: the brief (units + attachments, sticky) and the editor (tabs per variant). Stacks on phones. Dark IDE look by default; light only when explicitly chosen. */
 :root {
-  --bg: #f3f5f4;
-  --surface: #ffffff;
-  --sunken: #e8ecea;
-  --fg: #17201c;
-  --muted: #5b6862;
-  --line: #d3dbd7;
-  --accent: #1d6b52;
-  --accent-soft: #d9ece4;
-  --ok: #2a7a3d;
-  --warn: #9a6400;
-  --warn-soft: #fbf0d9;
-  --bad: #b3261e;
-  --bad-soft: #fbe3e1;
-  --code-bg: #eef1f0;
-  --font-display: "Cairo", "Segoe UI", Tahoma, system-ui, sans-serif;
-  --font-body: "Cairo", "Segoe UI", Tahoma, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bg: #14171c;
+  --panel: #1a1e24;
+  --raised: #20252d;
+  --sunken: #0f1216;
+  --line: #2a313b;
+  --fg: #d5dbe3;
+  --muted: #8b95a4;
+  --accent: #5aa9e6;
+  --accent-ink: #0d1b26;
+  --token: #c4a3f2;
+  --ok: #67c38a;
+  --warn: #d8aa52;
+  --bad: #ef7f76;
+  --font-ui: "Cairo", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #111614; --surface: #19201d; --sunken: #212a26; --fg: #e4ebe7; --muted: #9aa8a1; --line: #2e3a35;
-    --accent: #5cc29b; --accent-soft: #1d3a2f; --ok: #6cc583; --warn: #e2b155; --warn-soft: #3a2f17;
-    --bad: #f08a80; --bad-soft: #3d1f1c; --code-bg: #151b18; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #111614; --surface: #19201d; --sunken: #212a26; --fg: #e4ebe7; --muted: #9aa8a1; --line: #2e3a35;
-  --accent: #5cc29b; --accent-soft: #1d3a2f; --ok: #6cc583; --warn: #e2b155; --warn-soft: #3a2f17;
-  --bad: #f08a80; --bad-soft: #3d1f1c; --code-bg: #151b18; color-scheme: dark;
+:root[data-theme="light"] {
+  --bg: #f4f6f9; --panel: #ffffff; --raised: #f0f3f7; --sunken: #eaeef3; --line: #d5dce5; --fg: #1b2129; --muted: #5d6877;
+  --accent: #1f6fb2; --accent-ink: #ffffff; --token: #7b4cc2; --ok: #237a45; --warn: #925f00; --bad: #b4261d;
+  color-scheme: light;
 }
 html, body { direction: rtl; }
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15.5px; line-height: 1.75; text-align: right; }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
-.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1280px; margin: 0 auto; }
-header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
-header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 12px; }
-h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.45rem; margin: 0; letter-spacing: 0; text-wrap: balance; }
-.sub { color: var(--muted); font-size: 0.85rem; }
-.meter { display: flex; align-items: center; gap: 10px; margin-inline-start: auto; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.bar { width: 160px; max-width: 30vw; height: 8px; background: var(--sunken); border-radius: 4px; overflow: hidden; display: flex; }
-.bar span { display: block; height: 100%; }
-.bar .s { background: var(--accent); }
-.bar .c { background: var(--warn); }
-.notice { margin-block: 12px 0; padding: 10px 14px; border-radius: 8px; background: var(--warn-soft); color: var(--fg); border: 1px solid var(--line); font-size: 0.9rem; }
-main.wrap { display: grid; grid-template-columns: minmax(250px, 320px) minmax(0, 1fr); gap: 20px; padding-block: 16px 48px; }
-@media (max-width: 860px) { main.wrap { grid-template-columns: minmax(0, 1fr); } }
-aside.list { min-width: 0; }
-.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.filters button { font: inherit; font-size: 0.82rem; border: 1px solid var(--line); background: var(--surface); color: var(--fg); padding: 4px 10px; border-radius: 999px; cursor: pointer; }
-.filters button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
-ul.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: calc(100vh - 190px); overflow-y: auto; }
-@media (max-width: 860px) { ul.tasks { max-height: 260px; } }
-ul.tasks button { width: 100%; text-align: start; font: inherit; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--fg); cursor: pointer; }
-ul.tasks button:hover { background: var(--surface); border-color: var(--line); }
-ul.tasks button[aria-current="true"] { background: var(--surface); border-color: var(--accent); }
-.list-head h3 { margin: 0; }
-.list-head .count { color: var(--muted); font-weight: 400; font-size: 0.9rem; }
-.list-head .sub { margin: 2px 0 10px; }
-.item-main { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
-.proj { font-weight: 600; font-size: 0.95rem; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-.proj .num { font-family: var(--font-mono); font-weight: 500; font-size: 0.82rem; color: var(--muted); direction: ltr; unicode-bidi: isolate; }
-.meta { color: var(--muted); font-size: 0.78rem; }
-.tid { font-family: var(--font-mono); font-size: 0.78rem; direction: ltr; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chip { font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); }
-.chip.free { color: var(--muted); }
-.chip.mine { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
-.chip.taken { background: var(--sunken); color: var(--muted); border-color: transparent; }
-.chip.done { background: var(--accent); color: var(--surface); border-color: transparent; }
-section.desk { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; min-width: 0; }
-#deskBody:not(.empty) { display: flex; flex-direction: column; gap: 18px; }
-.desk-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
-.desk-head h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; margin: 0; unicode-bidi: isolate; overflow-wrap: anywhere; }
-.desk-head .actions { margin-inline-start: auto; display: flex; gap: 8px; flex-wrap: wrap; }
-h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.05rem; margin: 0 0 10px; }
-ol.units { direction: ltr; margin: 0; padding-inline-start: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; counter-reset: u; }
-ol.units li { counter-increment: u; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: start; }
-ol.units li::before { content: counter(u); font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); padding-top: 3px; text-align: center; }
-.unit { direction: ltr; text-align: left; font-size: 0.92rem; overflow-wrap: anywhere; }
-code, .unit code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 0 4px; border-radius: 4px; }
-.ph { font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent); font-weight: 500; }
-details.att { border: 1px solid var(--line); border-radius: 8px; background: var(--code-bg); }
-details.att + details.att { margin-top: 8px; }
-details.att summary { cursor: pointer; padding: 6px 12px; font-size: 0.85rem; display: flex; gap: 10px; align-items: center; }
-details.att pre { margin: 0; padding: 10px 12px; border-top: 1px solid var(--line); overflow-x: auto; direction: ltr; text-align: left; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; max-height: 320px; }
-.writing { display: grid; gap: 16px; }
-.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.field-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
-.field-head label { font-weight: 600; }
-.field-head .hint { color: var(--muted); font-size: 0.82rem; }
-.inserts { display: flex; gap: 4px; flex-wrap: wrap; margin-inline-start: auto; }
-.inserts button { font-family: var(--font-mono); font-size: 0.75rem; padding: 1px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--accent); cursor: pointer; }
-textarea { font: inherit; font-size: 0.95rem; line-height: 1.7; width: 100%; min-height: 150px; resize: vertical; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
-textarea[dir="ltr"] { font-family: var(--font-mono); font-size: 0.88rem; }
-textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-textarea:disabled { opacity: 0.7; }
-ul.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; }
-ul.checks li { padding-inline-start: 14px; position: relative; }
-ul.checks li::before { content: ""; position: absolute; inset-inline-start: 0; top: 0.65em; width: 7px; height: 7px; border-radius: 50%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 15.5px; line-height: 1.75; text-align: right; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1440px; margin: 0 auto; }
+
+header.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+header.bar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-block: 10px; }
+.brand { font-weight: 700; font-size: 1.05rem; white-space: nowrap; }
+.brand small { display: block; font-weight: 400; font-size: 0.78rem; color: var(--muted); line-height: 1.3; }
+.picker { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1 1 420px; min-width: 0; }
+select, .iconbtn { font: inherit; font-size: 0.9rem; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 6px; height: 36px; }
+select { padding: 0 10px; min-width: 0; }
+#taskSelect { flex: 1 1 260px; max-width: 460px; }
+.iconbtn { width: 36px; cursor: pointer; display: inline-grid; place-items: center; font-size: 1rem; }
+.iconbtn:disabled { opacity: 0.4; cursor: default; }
+.pos { color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.meter { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; margin-inline-start: auto; }
+.track { width: 120px; height: 6px; background: var(--sunken); border-radius: 3px; overflow: hidden; display: flex; }
+.track span { height: 100%; }
+#barSubmitted { background: var(--ok); } #barClaimed { background: var(--warn); }
+.textbtn { font: inherit; font-size: 0.82rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 4px; }
+.textbtn:hover { color: var(--fg); }
+
+.notice { margin-top: 12px; padding: 9px 14px; border-radius: 6px; background: var(--raised); border: 1px solid var(--line); border-inline-start: 3px solid var(--warn); font-size: 0.9rem; }
+
+main.wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 16px; padding-block: 16px 40px; align-items: start; }
+@media (max-width: 960px) { main.wrap { grid-template-columns: minmax(0, 1fr); } }
+.pane { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.pane-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.pane-head h2 { margin: 0; font-size: 1.05rem; font-weight: 700; unicode-bidi: isolate; }
+.pane-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.brief { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 72px); max-height: calc(100vh - 92px); overflow-y: auto; }
+@media (max-width: 960px) { .brief { position: static; max-height: none; } }
+h3 { margin: 0 0 8px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+
+.chip { font-size: 0.75rem; padding: 0 9px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); line-height: 1.8; }
+.chip.mine { color: var(--accent); border-color: var(--accent); }
+.chip.done { color: var(--ok); border-color: var(--ok); }
+
+ol.units { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; counter-reset: u; }
+ol.units li { counter-increment: u; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; align-items: start; }
+ol.units li::before { content: counter(u); font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); background: var(--raised); border: 1px solid var(--line); border-radius: 4px; text-align: center; line-height: 22px; height: 24px; margin-top: 3px; }
+.unit-ar { font-size: 0.97rem; overflow-wrap: anywhere; }
+.unit-en { direction: ltr; text-align: left; font-size: 0.8rem; color: var(--muted); overflow-wrap: anywhere; margin-top: 2px; }
+code { font-family: var(--font-mono); font-size: 0.85em; background: var(--sunken); border: 1px solid var(--line); padding: 0 4px; border-radius: 4px; direction: ltr; unicode-bidi: isolate; }
+.ph { font-family: var(--font-mono); font-size: 0.82em; color: var(--token); font-weight: 500; direction: ltr; unicode-bidi: isolate; }
+details.att { border: 1px solid var(--line); border-radius: 6px; background: var(--sunken); }
+details.att + details.att { margin-top: 6px; }
+details.att summary { cursor: pointer; padding: 5px 12px; font-size: 0.85rem; display: flex; gap: 10px; align-items: center; }
+details.att pre { margin: 0; padding: 10px 12px; border-top: 1px solid var(--line); overflow-x: auto; direction: ltr; text-align: left; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.55; max-height: 280px; color: var(--fg); }
+
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); padding: 0 8px; overflow-x: auto; }
+.tab { font: inherit; font-size: 0.92rem; background: none; color: var(--muted); border: none; border-bottom: 2px solid transparent; padding: 10px 14px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); }
+.editor { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.editor .hint { color: var(--muted); font-size: 0.85rem; margin: 0; }
+.inserts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 0.8rem; color: var(--muted); }
+.inserts button { font-family: var(--font-mono); font-size: 0.75rem; padding: 1px 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--raised); color: var(--token); cursor: pointer; }
+textarea { font: inherit; font-size: 0.98rem; line-height: 1.8; width: 100%; min-height: 260px; resize: vertical; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--sunken); color: var(--fg); }
+textarea[dir="ltr"] { font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.7; text-align: left; }
+.reference { border: 1px dashed var(--line); border-radius: 6px; padding: 8px 12px; font-size: 0.88rem; color: var(--muted); white-space: pre-wrap; max-height: 140px; overflow-y: auto; }
+.reference strong { color: var(--fg); font-weight: 600; display: block; margin-bottom: 2px; font-size: 0.8rem; }
+ul.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 0.84rem; }
+ul.checks li { padding-inline-start: 16px; position: relative; }
+ul.checks li::before { content: ""; position: absolute; inset-inline-start: 0; top: 0.7em; width: 7px; height: 7px; border-radius: 50%; }
 ul.checks li.bad { color: var(--bad); } ul.checks li.bad::before { background: var(--bad); }
 ul.checks li.warn { color: var(--warn); } ul.checks li.warn::before { background: var(--warn); }
 ul.checks li.ok { color: var(--ok); } ul.checks li.ok::before { background: var(--ok); }
-.btn { font: inherit; font-size: 0.9rem; font-weight: 600; padding: 7px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; }
+.foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--line); }
+.foot .actions { margin-inline-start: auto; display: flex; gap: 8px; }
+.status-line { color: var(--muted); font-size: 0.84rem; }
+.btn { font: inherit; font-size: 0.92rem; font-weight: 600; padding: 6px 18px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
 .btn.ghost { background: transparent; color: var(--accent); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.status-line { color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
-.empty { text-align: center; color: var(--muted); padding-block: 40px; }
-.empty strong { display: block; font-family: var(--font-display); font-size: 1.2rem; color: var(--fg); margin-bottom: 6px; }
-details.guide summary { cursor: pointer; font-weight: 600; }
-details.guide ul { margin: 8px 0 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
-.toast { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); inset-inline-start: max(16px, env(safe-area-inset-left, 0px)); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 0.88rem; z-index: 20; max-width: calc(100vw - 32px); }
-@media (prefers-reduced-motion: no-preference) { ul.tasks button, .btn { transition: background-color .15s, border-color .15s; } }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.gate { padding: 36px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.gate strong { font-size: 1.1rem; }
+.gate p { margin: 0; color: var(--muted); max-width: 46ch; }
+details.rules { border-bottom: 1px solid var(--line); }
+details.rules summary { cursor: pointer; padding: 10px 16px; font-size: 0.88rem; color: var(--muted); }
+details.rules ul { margin: 0; padding: 0 36px 12px 16px; display: flex; flex-direction: column; gap: 3px; font-size: 0.88rem; }
+textarea:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toast { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); background: var(--raised); color: var(--fg); border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); padding: 8px 14px; border-radius: 6px; font-size: 0.88rem; z-index: 20; max-width: calc(100vw - 32px); }
+@media (prefers-reduced-motion: no-preference) { .tab, .btn, .iconbtn { transition: color .15s, background-color .15s, border-color .15s; } }
 </style>
 
 <div dir="rtl" lang="ar-EG">
-<header class="top">
+<header class="bar">
   <div class="wrap">
-    <div>
-      <h1>ورشة ضريبة اللهجة</h1>
-      <div class="sub">اكتب كل طلب بالإنجليزي والمصري والفرانكو، زي ما بتكلّم الـ agent فعلاً.</div>
+    <div class="brand">ورشة ضريبة اللهجة<small>طلبات bugs حقيقية، بالإنجليزي والمصري والفرانكو</small></div>
+    <div class="picker">
+      <label for="filterSelect" class="pos">عرض</label>
+      <select id="filterSelect">
+        <option value="all">كل التاسكات</option>
+        <option value="free">المتاح للحجز</option>
+        <option value="mine">بتاعي</option>
+        <option value="done">اللي اتسلّم</option>
+      </select>
+      <button class="iconbtn" id="prevBtn" type="button" aria-label="التاسك اللي قبله">→</button>
+      <select id="taskSelect" aria-label="اختار تاسك"></select>
+      <button class="iconbtn" id="nextBtn" type="button" aria-label="التاسك اللي بعده">←</button>
+      <span class="pos" id="posText"></span>
     </div>
     <div class="meter" aria-live="polite">
-      <div class="bar" aria-hidden="true"><span class="s" id="barSubmitted"></span><span class="c" id="barClaimed"></span></div>
-      <span id="meterText">٠ من ٥٠ اتسلّم</span>
+      <div class="track" aria-hidden="true"><span id="barSubmitted"></span><span id="barClaimed"></span></div>
+      <span id="meterText"></span>
+      <button class="textbtn" id="themeBtn" type="button">فاتح</button>
     </div>
   </div>
 </header>
@@ -138,39 +144,15 @@ details.guide ul { margin: 8px 0 0; padding-inline-start: 20px; display: flex; f
 <div class="wrap"><div class="notice" id="notice" hidden></div></div>
 
 <main class="wrap">
-  <aside class="list" aria-label="التاسكات">
-    <div class="list-head">
-      <h3>التاسكات <span class="count" id="listCount"></span></h3>
-      <p class="sub">كل تاسك bug حقيقي من مشروع open source. اختار واحد، احجزه، واكتب طلبه بالتلات صيغ.</p>
+  <section class="pane brief" aria-labelledby="briefTitle">
+    <div class="pane-head">
+      <h2 id="briefTitle">المطلوب</h2>
+      <span class="chip" id="statusChip"></span>
     </div>
-    <div class="filters" role="group" aria-label="فلترة">
-      <button type="button" data-filter="all" aria-pressed="true">الكل</button>
-      <button type="button" data-filter="free" aria-pressed="false">متاح</button>
-      <button type="button" data-filter="mine" aria-pressed="false">بتاعي</button>
-      <button type="button" data-filter="done" aria-pressed="false">اتسلّم</button>
-    </div>
-    <ul class="tasks" id="taskList"></ul>
-  </aside>
-
-  <section class="desk" id="desk">
-    <div class="panel">
-      <details class="guide" id="guide" open>
-        <summary>قبل ما تبدأ: ٦ قواعد</summary>
-        <ul>
-          <li>متفتحش الـ issue الأصلي. اقرأ الوحدات، افهم المشكلة، واكتب بطريقتك.</li>
-          <li>كل الوحدات لازم تكون في طلبك، ومتزودش معلومة مش موجودة.</li>
-          <li>المرفقات بالـ placeholder بس: اكتب <span class="ph">[[A1]]</span> مكان ما كنت هتلزق الكود.</li>
-          <li>أسماء الـ functions والـ classes تفضل بالإنجليزي زي ما هي.</li>
-          <li>ممنوع أي AI أو أداة ترجمة. إحنا بنقيس الموديلات على كلام بشر.</li>
-          <li>اكتب الإنجليزي الأول، وبعده المصري، وبعده الفرانكو من المصري اللي كتبته.</li>
-        </ul>
-      </details>
-    </div>
-    <div id="deskBody" class="panel empty">
-      <strong>اختار تاسك من القايمة</strong>
-      احجزه، اكتب الصيغ التلاتة، وسلّمه. المسودة بتتحفظ لوحدها.
-    </div>
+    <div class="pane-body" id="briefBody"></div>
   </section>
+
+  <section class="pane" aria-label="الكتابة" id="editorPane"></section>
 </main>
 
 <div class="toast" id="toast" role="status" hidden></div>
@@ -184,32 +166,39 @@ details.guide ul { margin: 8px 0 0; padding-inline-start: 20px; display: flex; f
   const CARDS = JSON.parse(document.getElementById("cards").textContent);
   const BY_ID = Object.fromEntries(CARDS.map(c => [c.instance_id, c]));
   const VARIANTS = [
-    { key: "en", label: "إنجليزي", dir: "ltr", script: "latin", hint: "زي ما بتكتب لـ agent بالإنجليزي عادي" },
-    { key: "egy", label: "مصري", dir: "rtl", script: "arabic", hint: "بحروف عربي، بالخلط الطبيعي بتاعك (الـ function، الـ error...)" },
-    { key: "franco", label: "مصري فرانكو", dir: "ltr", script: "latin", hint: "نفس المصري بالفرانكو (3، 7، 2...) زي واتساب" },
+    { key: "en", label: "إنجليزي", dir: "ltr", script: "latin", hint: "اكتب الطلب بالإنجليزي زي ما بتكتبه لـ agent عادي." },
+    { key: "egy", label: "مصري", dir: "rtl", script: "arabic", hint: "بحروف عربي، بالخلط الطبيعي بتاعك (الـ function، الـ error...). متترجمش الإنجليزي حرفياً." },
+    { key: "franco", label: "فرانكو", dir: "ltr", script: "latin", hint: "نفس المصري اللي كتبته، بس بالفرانكو (3، 7، 2...) زي ما بتكتب على واتساب." },
   ];
-  const AR_DIGITS = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
-
-  const state = { uid: null, canWrite: null, db: null, claims: {}, mine: {}, selected: null, filter: "all", dbReady: false };
-  const saveTimers = {};
+  const PROJECTS = { "django/django": "Django", "sympy/sympy": "SymPy", "matplotlib/matplotlib": "Matplotlib", "sphinx-doc/sphinx": "Sphinx",
+    "scikit-learn/scikit-learn": "scikit-learn", "astropy/astropy": "Astropy", "pydata/xarray": "xarray", "pytest-dev/pytest": "pytest",
+    "pylint-dev/pylint": "Pylint", "mwaskom/seaborn": "seaborn" };
+  const AR = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+  const projectName = repo => PROJECTS[repo] || repo.split("/").pop();
+  const taskLabel = c => `${projectName(c.repo)} #${c.instance_id.split("-").pop()}`;
   const $ = id => document.getElementById(id);
 
-  function toast(text) {
-    const t = $("toast");
-    t.textContent = text;
-    t.hidden = false;
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => { t.hidden = true; }, 3200);
-  }
-  function notice(text) {
-    const n = $("notice");
-    n.textContent = text || "";
-    n.hidden = !text;
-  }
+  const state = { uid: null, canWrite: null, db: null, dbReady: false, claims: {}, mine: {}, selected: null, filter: "all", tab: "en" };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
 
-  function localKey(id) { return "dt-draft:" + id; }
-  function readLocal(id) { try { return JSON.parse(localStorage.getItem(localKey(id)) || "null"); } catch { return null; } }
-  function writeLocal(id, body) { try { localStorage.setItem(localKey(id), JSON.stringify(body)); } catch {} }
+  const theme = store.get("dt-theme", "dark");
+  if (theme === "light") document.documentElement.dataset.theme = "light";
+  $("themeBtn").textContent = theme === "light" ? "غامق" : "فاتح";
+  $("themeBtn").addEventListener("click", () => {
+    const light = document.documentElement.dataset.theme !== "light";
+    if (light) document.documentElement.dataset.theme = "light"; else delete document.documentElement.dataset.theme;
+    $("themeBtn").textContent = light ? "غامق" : "فاتح";
+    store.set("dt-theme", light ? "light" : "dark");
+  });
+
+  function toast(text) {
+    const t = $("toast"); t.textContent = text; t.hidden = false;
+    clearTimeout(toast.timer); toast.timer = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+  function notice(text) { const n = $("notice"); n.textContent = text || ""; n.hidden = !text; }
 
   function taskStatus(id) {
     const claim = state.claims[id];
@@ -217,108 +206,116 @@ details.guide ul { margin: 8px 0 0; padding-inline-start: 20px; display: flex; f
     if (claim.status === "submitted") return claim.uid === state.uid ? "done-mine" : "done";
     return claim.uid === state.uid ? "mine" : "taken";
   }
-  const CHIP = {
-    free: ["free", "متاح للحجز"], mine: ["mine", "محجوز لك"], taken: ["taken", "مع كاتب تاني"],
+  const STATUS = {
+    free: ["", "متاح للحجز"], mine: ["mine", "محجوز لك"], taken: ["", "مع كاتب تاني"],
     "done-mine": ["done", "سلّمته"], done: ["done", "اتسلّم"],
   };
+  function visibleTasks() {
+    return CARDS.filter(c => {
+      const s = taskStatus(c.instance_id);
+      if (state.filter === "free") return s === "free";
+      if (state.filter === "mine") return s === "mine" || s === "done-mine";
+      if (state.filter === "done") return s === "done" || s === "done-mine";
+      return true;
+    });
+  }
 
   function renderMeter() {
-    const total = CARDS.length;
     let submitted = 0, claimed = 0;
     for (const c of CARDS) {
       const s = taskStatus(c.instance_id);
-      if (s === "done" || s === "done-mine") submitted++;
-      else if (s === "mine" || s === "taken") claimed++;
+      if (s === "done" || s === "done-mine") submitted++; else if (s !== "free") claimed++;
     }
-    $("barSubmitted").style.width = (100 * submitted / total) + "%";
-    $("barClaimed").style.width = (100 * claimed / total) + "%";
-    $("meterText").textContent = `${AR_DIGITS(submitted)} من ${AR_DIGITS(total)} اتسلّم · ${AR_DIGITS(claimed)} محجوز`;
+    $("barSubmitted").style.width = (100 * submitted / CARDS.length) + "%";
+    $("barClaimed").style.width = (100 * claimed / CARDS.length) + "%";
+    $("meterText").textContent = `${AR(submitted)} من ${AR(CARDS.length)} اتسلّم`;
   }
 
-  const PROJECTS = { "django/django": "Django", "sympy/sympy": "SymPy", "matplotlib/matplotlib": "Matplotlib", "sphinx-doc/sphinx": "Sphinx",
-    "scikit-learn/scikit-learn": "scikit-learn", "astropy/astropy": "Astropy", "pydata/xarray": "xarray", "pytest-dev/pytest": "pytest",
-    "pylint-dev/pylint": "Pylint", "mwaskom/seaborn": "seaborn" };
-  function projectName(repo) { return PROJECTS[repo] || repo.split("/").pop(); }
-
-  function renderList() {
-    const ul = $("taskList");
-    $("listCount").textContent = "(" + AR_DIGITS(CARDS.length) + ")";
-    ul.textContent = "";
-    for (const c of CARDS) {
-      const s = taskStatus(c.instance_id);
-      const f = state.filter;
-      if (f === "free" && s !== "free") continue;
-      if (f === "mine" && s !== "mine" && s !== "done-mine") continue;
-      if (f === "done" && s !== "done" && s !== "done-mine") continue;
-      const li = document.createElement("li");
-      const b = document.createElement("button");
-      b.type = "button";
-      b.setAttribute("aria-current", String(state.selected === c.instance_id));
-      b.title = c.instance_id;
-      const main = document.createElement("span");
-      main.className = "item-main";
-      const proj = document.createElement("span");
-      proj.className = "proj";
-      proj.textContent = projectName(c.repo);
-      const num = document.createElement("span");
-      num.className = "num";
-      num.textContent = "#" + c.instance_id.split("-").pop();
-      proj.append(num);
-      const meta = document.createElement("span");
-      meta.className = "meta";
-      meta.textContent = `${AR_DIGITS(c.units.length)} نقط` + (c.attachments.length ? ` · ${AR_DIGITS(c.attachments.length)} مرفقات` : " · من غير مرفقات");
-      main.append(proj, meta);
-      const chip = document.createElement("span");
-      chip.className = "chip " + CHIP[s][0];
-      chip.textContent = CHIP[s][1];
-      b.append(main, chip);
-      b.addEventListener("click", () => select(c.instance_id));
-      li.append(b);
-      ul.append(li);
+  function renderPicker() {
+    const list = visibleTasks();
+    const sel = $("taskSelect");
+    sel.textContent = "";
+    if (!list.length) {
+      const o = document.createElement("option"); o.textContent = "مفيش تاسكات في العرض ده"; o.disabled = true; sel.append(o);
     }
-    if (!ul.children.length) {
-      const li = document.createElement("li");
-      li.className = "status-line";
-      li.textContent = "مفيش تاسكات في الفلتر ده.";
-      ul.append(li);
+    for (const c of list) {
+      const o = document.createElement("option");
+      o.value = c.instance_id;
+      o.textContent = `${taskLabel(c)}  ·  ${STATUS[taskStatus(c.instance_id)][1]}`;
+      sel.append(o);
     }
+    const idx = list.findIndex(c => c.instance_id === state.selected);
+    if (idx >= 0) sel.value = state.selected;
+    $("posText").textContent = idx >= 0 ? `${AR(idx + 1)} من ${AR(list.length)}` : `${AR(list.length)} تاسك`;
+    $("prevBtn").disabled = idx <= 0;
+    $("nextBtn").disabled = idx < 0 || idx >= list.length - 1;
     renderMeter();
   }
 
-  function renderUnit(text) {
-    const span = document.createElement("span");
-    span.className = "unit";
-    const parts = text.split(/(`[^`]+`|\[\[A\d+\]\])/g);
-    for (const p of parts) {
+  function inlineRich(text, el) {
+    for (const p of text.split(/(`[^`]+`|\[\[A\d+\]\])/g)) {
       if (!p) continue;
-      if (p.startsWith("`") && p.endsWith("`")) {
-        const code = document.createElement("code");
-        code.textContent = p.slice(1, -1);
-        span.append(code);
-      } else if (/^\[\[A\d+\]\]$/.test(p)) {
-        const ph = document.createElement("span");
-        ph.className = "ph";
-        ph.textContent = p;
-        span.append(ph);
-      } else {
-        span.append(document.createTextNode(p));
-      }
+      if (p.startsWith("`") && p.endsWith("`") && p.length > 1) { const c = document.createElement("code"); c.textContent = p.slice(1, -1); el.append(c); }
+      else if (/^\[\[A\d+\]\]$/.test(p)) { const s = document.createElement("span"); s.className = "ph"; s.textContent = p; el.append(s); }
+      else el.append(document.createTextNode(p));
     }
-    return span;
+    return el;
+  }
+  function div(className, attrs) { return Object.assign(document.createElement("div"), { className }, attrs || {}); }
+
+  function renderBrief() {
+    const id = state.selected, body = $("briefBody");
+    body.textContent = "";
+    if (!id) return;
+    const card = BY_ID[id], s = taskStatus(id);
+    $("briefTitle").textContent = taskLabel(card);
+    $("briefTitle").title = id;
+    const chip = $("statusChip");
+    chip.className = "chip " + STATUS[s][0];
+    chip.textContent = STATUS[s][1];
+
+    const unitsBox = document.createElement("div");
+    const h = document.createElement("h3"); h.textContent = "اللي لازم طلبك يوصّله (كله، ومن غير زيادة)";
+    const ol = document.createElement("ol"); ol.className = "units";
+    card.units.forEach((u, i) => {
+      const li = document.createElement("li");
+      const box = document.createElement("div");
+      if (card.units_ar && card.units_ar[i]) box.append(inlineRich(card.units_ar[i], div("unit-ar")));
+      box.append(inlineRich(u, div("unit-en", { lang: "en" })));
+      li.append(box); ol.append(li);
+    });
+    unitsBox.append(h, ol);
+    body.append(unitsBox);
+
+    if (card.attachments.length) {
+      const attBox = document.createElement("div");
+      const h2 = document.createElement("h3"); h2.textContent = "المرفقات: بتتلزق زي ما هي، إنت بس اكتب مكانها الـ placeholder";
+      attBox.append(h2);
+      const KIND = { code: "كود", traceback: "traceback", image: "صورة", details: "تفاصيل البيئة" };
+      for (const a of card.attachments) {
+        const d = document.createElement("details"); d.className = "att";
+        const sm = document.createElement("summary");
+        const ph = document.createElement("span"); ph.className = "ph"; ph.textContent = `[[A${a.id}]]`;
+        const k = document.createElement("span"); k.className = "status-line"; k.textContent = KIND[a.kind] || a.kind;
+        sm.append(ph, k);
+        const pre = document.createElement("pre"); pre.textContent = a.text;
+        d.append(sm, pre); attBox.append(d);
+      }
+      body.append(attBox);
+    }
   }
 
   const ARABIC = /[؀-ۿ]/g, LATIN = /[A-Za-z]/g, PH = /\[\[A(\d+)\]\]/g;
-  function stripCode(t) { return t.replace(PH, "").replace(/`[^`]*`/g, ""); }
+  const stripCode = t => t.replace(PH, "").replace(/`[^`]*`/g, "");
   function arabicRatio(t) {
-    const body = stripCode(t);
-    const a = (body.match(ARABIC) || []).length, l = (body.match(LATIN) || []).length;
+    const b = stripCode(t), a = (b.match(ARABIC) || []).length, l = (b.match(LATIN) || []).length;
     return a + l ? a / (a + l) : 0;
   }
-  function validate(variant, text, card) {
+  function validate(v, text, card) {
+    if (!text.trim()) return [{ level: "bad", msg: "لسه فاضي" }];
     const out = [];
     const words = stripCode(text).trim().split(/\s+/).filter(Boolean).length;
-    if (!text.trim()) return [{ level: "bad", msg: "لسه فاضي" }];
-    if (words < 8) out.push({ level: "bad", msg: `قصير أوي (${AR_DIGITS(words)} كلمة)، المطلوب ٨ على الأقل` });
+    if (words < 8) out.push({ level: "bad", msg: `قصير أوي (${AR(words)} كلمة)، المطلوب ٨ على الأقل` });
     const ids = new Set(card.attachments.map(a => a.id));
     const refs = [...text.matchAll(PH)].map(m => Number(m[1]));
     const unknown = [...new Set(refs.filter(n => !ids.has(n)))];
@@ -326,291 +323,249 @@ details.guide ul { margin: 8px 0 0; padding-inline-start: 20px; display: flex; f
     const missing = [...ids].filter(n => !refs.includes(n));
     if (missing.length) out.push({ level: "warn", msg: "مرفقات مش مستخدمة (هتتحط في الآخر): " + missing.map(n => `[[A${n}]]`).join("، ") });
     const r = arabicRatio(text);
-    if (variant.script === "arabic" && r < 0.5) out.push({ level: "bad", msg: "المفروض حروف عربي" });
-    if (variant.script === "latin" && r > 0.05) out.push({ level: "bad", msg: "المفروض حروف لاتيني بس" });
+    if (v.script === "arabic" && r < 0.5) out.push({ level: "bad", msg: "المفروض يكون بحروف عربي" });
+    if (v.script === "latin" && r > 0.05) out.push({ level: "bad", msg: "المفروض يكون بحروف لاتيني بس" });
     for (const a of card.attachments) {
       const line = a.text.split("\n").map(s => s.trim()).find(s => s.length > 20 && !s.startsWith("```"));
-      if (line && text.includes(line)) out.push({ level: "warn", msg: `شكلك لزقت كود [[A${a.id}]] بدل الـ placeholder` });
+      if (line && text.includes(line)) out.push({ level: "warn", msg: `شكلك لزقت الكود بتاع [[A${a.id}]] بدل الـ placeholder` });
     }
-    if (!out.length) out.push({ level: "ok", msg: "تمام" });
-    return out;
+    return out.length ? out : [{ level: "ok", msg: "تمام" }];
   }
+  const worst = checks => checks.some(c => c.level === "bad") ? "bad" : checks.some(c => c.level === "warn") ? "warn" : "ok";
 
-  function currentDraft(id) {
-    const remote = state.mine[id];
-    const local = readLocal(id);
+  const localKey = id => "dt-draft:" + id;
+  function draftFor(id) {
+    const remote = state.mine[id], local = store.get(localKey(id), null);
     if (remote && (!local || (remote.updatedAt || 0) >= (local.updatedAt || 0))) return { ...remote };
     return local || { en: "", egy: "", franco: "", status: "draft", updatedAt: 0 };
   }
+  let working = null;
 
-  function select(id) {
-    state.selected = id;
-    const g = $("guide"); if (g) g.open = false;
-    renderList();
-    renderDesk();
-    if (window.matchMedia("(max-width: 860px)").matches) $("desk").scrollIntoView({ block: "start" });
-  }
-
-  function renderDesk() {
-    const id = state.selected;
-    const body = $("deskBody");
+  function renderEditor() {
+    const id = state.selected, pane = $("editorPane");
+    pane.textContent = "";
     if (!id) return;
-    const card = BY_ID[id];
-    const s = taskStatus(id);
+    const card = BY_ID[id], s = taskStatus(id);
     const editable = (s === "mine" || s === "done-mine") && state.canWrite !== false;
-    const draft = currentDraft(id);
-    body.className = "panel";
-    body.textContent = "";
 
-    const head = document.createElement("div");
-    head.className = "desk-head";
-    const h2 = document.createElement("h2");
-    h2.textContent = `${projectName(card.repo)} #${id.split("-").pop()}`;
-    h2.title = id;
-    const chip = document.createElement("span");
-    chip.className = "chip " + CHIP[s][0];
-    chip.textContent = CHIP[s][1];
-    const actions = document.createElement("div");
-    actions.className = "actions";
-    if (s === "free") {
-      const claim = button("احجز التاسك ده", () => claimTask(id));
-      claim.disabled = !state.dbReady || state.canWrite === false;
-      actions.append(claim);
-    } else if (s === "mine") {
-      actions.append(button("سيبه لحد تاني", () => releaseTask(id), true));
-    }
-    head.append(h2, chip, actions);
-    body.append(head);
+    const rules = document.createElement("details");
+    rules.className = "rules";
+    rules.open = !store.get("dt-rules-seen", false);
+    rules.addEventListener("toggle", () => { if (!rules.open) store.set("dt-rules-seen", true); });
+    const rs = document.createElement("summary"); rs.textContent = "قواعد الكتابة (٦)";
+    const ul = document.createElement("ul");
+    for (const t of [
+      "متفتحش الـ issue الأصلي. افهم المطلوب واكتب بطريقتك.",
+      "كل النقط لازم تكون في طلبك، ومتزودش معلومة مش موجودة.",
+      "مكان أي كود اكتب الـ placeholder بتاعه، زي \u2066[[A1]]\u2069، ومتلزقش الكود.",
+      "أسماء الـ functions والـ classes تفضل بالإنجليزي زي ما هي.",
+      "ممنوع أي AI أو أداة ترجمة.",
+      "اكتب الإنجليزي، بعده المصري، بعده الفرانكو من المصري.",
+    ]) { const li = document.createElement("li"); li.textContent = t; ul.append(li); }
+    rules.append(rs, ul);
+    pane.append(rules);
 
-    const unitsBox = document.createElement("div");
-    const h3 = document.createElement("h3");
-    h3.textContent = "اللي لازم طلبك يوصّله";
-    const ol = document.createElement("ol");
-    ol.className = "units";
-    for (const u of card.units) {
-      const li = document.createElement("li");
-      li.append(renderUnit(u));
-      ol.append(li);
-    }
-    unitsBox.append(h3, ol);
-    body.append(unitsBox);
-
-    if (card.attachments.length) {
-      const attBox = document.createElement("div");
-      const h = document.createElement("h3");
-      h.textContent = "المرفقات (بتتحط زي ما هي)";
-      attBox.append(h);
-      for (const a of card.attachments) {
-        const d = document.createElement("details");
-        d.className = "att";
-        const sm = document.createElement("summary");
-        const ph = document.createElement("span");
-        ph.className = "ph";
-        ph.textContent = `[[A${a.id}]]`;
-        const kind = document.createElement("span");
-        kind.className = "status-line";
-        kind.textContent = { code: "كود", traceback: "traceback", image: "صورة", details: "تفاصيل البيئة" }[a.kind] || a.kind;
-        sm.append(ph, kind);
-        const pre = document.createElement("pre");
-        pre.textContent = a.text;
-        d.append(sm, pre);
-        attBox.append(d);
+    if (!editable) {
+      working = null;
+      const gate = div("gate");
+      const strong = document.createElement("strong"), p = document.createElement("p");
+      if (s === "free") {
+        strong.textContent = "التاسك ده متاح";
+        p.textContent = "احجزه الأول عشان محدش تاني يكتب نفس التاسك، وبعدها هتظهرلك خانات الكتابة.";
+        const b = button("احجز التاسك ده", () => claimTask(id));
+        b.disabled = !state.dbReady || state.canWrite === false;
+        gate.append(strong, p, b);
+      } else if (state.canWrite === false) {
+        strong.textContent = "صلاحيتك قراءة بس"; p.textContent = "اطلب من صاحب الصفحة يخليك Contributor عشان تقدر تكتب."; gate.append(strong, p);
+      } else {
+        strong.textContent = s === "taken" ? "التاسك ده مع كاتب تاني" : "التاسك ده اتسلّم";
+        p.textContent = "اختار تاسك تاني من الشريط اللي فوق، أو اعرض المتاح للحجز بس."; gate.append(strong, p);
       }
-      body.append(attBox);
+      pane.append(gate);
+      return;
     }
 
-    const writing = document.createElement("div");
-    writing.className = "writing";
-    const checksById = {};
+    if (!working || working.id !== id) {
+      const draft = draftFor(id);
+      working = { id, updatedAt: draft.updatedAt || 0, fields: { en: draft.en || "", egy: draft.egy || "", franco: draft.franco || "" } };
+    }
+
+    const tabs = div("tabs", { role: "tablist" });
+    const dots = {};
     for (const v of VARIANTS) {
-      const field = document.createElement("div");
-      field.className = "field";
-      const fh = document.createElement("div");
-      fh.className = "field-head";
-      const label = document.createElement("label");
-      label.htmlFor = "ta-" + v.key;
-      label.textContent = v.label;
-      const hint = document.createElement("span");
-      hint.className = "hint";
-      hint.textContent = v.hint;
-      fh.append(label, hint);
-      const ta = document.createElement("textarea");
-      ta.id = "ta-" + v.key;
-      ta.dir = v.dir;
-      ta.lang = v.key === "egy" ? "ar-EG" : "en";
-      ta.value = draft[v.key] || "";
-      ta.disabled = !editable;
-      ta.spellcheck = v.key === "en";
-      if (card.attachments.length && editable) {
-        const ins = document.createElement("div");
-        ins.className = "inserts";
-        for (const a of card.attachments) {
-          const b = document.createElement("button");
-          b.type = "button";
-          b.textContent = `[[A${a.id}]]`;
-          b.title = "حط الـ placeholder مكان المؤشر";
-          b.addEventListener("click", () => insertAt(ta, `[[A${a.id}]]`));
-          ins.append(b);
-        }
-        fh.append(ins);
-      }
-      const checks = document.createElement("ul");
-      checks.className = "checks";
-      checksById[v.key] = checks;
-      ta.addEventListener("input", () => { paintChecks(v, ta.value, card, checks); scheduleSave(id); });
-      paintChecks(v, ta.value, card, checks);
-      field.append(fh, ta, checks);
-      writing.append(field);
+      const t = document.createElement("button");
+      t.type = "button"; t.className = "tab"; t.setAttribute("role", "tab");
+      t.setAttribute("aria-selected", String(state.tab === v.key));
+      const dot = document.createElement("span"); dot.className = "dot " + worst(validate(v, working.fields[v.key], card));
+      dots[v.key] = dot;
+      t.append(dot, document.createTextNode(v.label));
+      t.addEventListener("click", () => { state.tab = v.key; renderEditor(); });
+      tabs.append(t);
     }
-    body.append(writing);
+    pane.append(tabs);
 
-    const foot = document.createElement("div");
-    foot.className = "desk-head";
-    const status = document.createElement("span");
-    status.className = "status-line";
-    status.id = "saveStatus";
-    status.textContent = s === "done-mine" ? "متسلّم. ينفع تعدّل وتسلّم تاني." : editable ? (draft.updatedAt ? "المسودة محفوظة" : "") : s === "free" ? "احجز التاسك الأول عشان تكتب" : s === "taken" ? "التاسك ده مع كاتب تاني" : "";
-    const footActions = document.createElement("div");
-    footActions.className = "actions";
-    if (editable) {
-      footActions.append(button("احفظ مسودة", () => saveDraft(id, "draft", true), true));
-      footActions.append(button(s === "done-mine" ? "سلّم التعديل" : "سلّم", () => submit(id)));
+    const v = VARIANTS.find(x => x.key === state.tab);
+    const ed = div("editor");
+    const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = v.hint;
+    ed.append(hint);
+    if (v.key === "franco" && working.fields.egy.trim()) {
+      const ref = div("reference", { dir: "rtl" });
+      const st = document.createElement("strong"); st.textContent = "المصري اللي كتبته:";
+      ref.append(st, document.createTextNode(working.fields.egy));
+      ed.append(ref);
     }
-    foot.append(status, footActions);
-    body.append(foot);
+    const ta = document.createElement("textarea");
+    ta.id = "ta-" + v.key; ta.dir = v.dir; ta.lang = v.key === "egy" ? "ar-EG" : "en";
+    ta.value = working.fields[v.key]; ta.spellcheck = v.key === "en";
+    ta.setAttribute("aria-label", "طلب " + v.label);
+    if (card.attachments.length) {
+      const ins = div("inserts");
+      ins.append(document.createTextNode("حط مكان المؤشر:"));
+      for (const a of card.attachments) {
+        const b = document.createElement("button"); b.type = "button"; b.textContent = `[[A${a.id}]]`;
+        b.addEventListener("click", () => insertAt(ta, `[[A${a.id}]]`));
+        ins.append(b);
+      }
+      ed.append(ins);
+    }
+    const checks = document.createElement("ul"); checks.className = "checks";
+    const paint = () => {
+      const res = validate(v, ta.value, card);
+      checks.textContent = "";
+      for (const c of res) { const li = document.createElement("li"); li.className = c.level; li.textContent = c.msg; checks.append(li); }
+      dots[v.key].className = "dot " + worst(res);
+    };
+    ta.addEventListener("input", () => { working.fields[v.key] = ta.value; paint(); scheduleSave(id); });
+    paint();
+    ed.append(ta, checks);
+    pane.append(ed);
+
+    const foot = div("foot");
+    const status = document.createElement("span"); status.className = "status-line"; status.id = "saveStatus";
+    status.textContent = s === "done-mine" ? "متسلّم. ينفع تعدّل وتسلّم تاني." : working.updatedAt ? "المسودة محفوظة" : "المسودة بتتحفظ لوحدها وإنت بتكتب";
+    const actions = div("actions");
+    if (s === "mine") actions.append(button("سيبه لحد تاني", () => releaseTask(id), true));
+    actions.append(button(s === "done-mine" ? "سلّم التعديل" : "سلّم التلات صيغ", () => submit(id)));
+    foot.append(status, actions);
+    pane.append(foot);
   }
 
   function button(text, onClick, ghost) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "btn" + (ghost ? " ghost" : "");
-    b.textContent = text;
-    b.addEventListener("click", onClick);
-    return b;
+    const b = document.createElement("button"); b.type = "button"; b.className = "btn" + (ghost ? " ghost" : "");
+    b.textContent = text; b.addEventListener("click", onClick); return b;
   }
   function insertAt(ta, text) {
     const start = ta.selectionStart ?? ta.value.length, end = ta.selectionEnd ?? start;
     ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
-    ta.focus();
-    ta.selectionStart = ta.selectionEnd = start + text.length;
+    ta.focus(); ta.selectionStart = ta.selectionEnd = start + text.length;
     ta.dispatchEvent(new Event("input"));
   }
-  function paintChecks(v, text, card, ul) {
-    ul.textContent = "";
-    for (const c of validate(v, text, card)) {
-      const li = document.createElement("li");
-      li.className = c.level;
-      li.textContent = c.msg;
-      ul.append(li);
-    }
-  }
-  function readFields() {
-    const body = {};
-    for (const v of VARIANTS) body[v.key] = ($("ta-" + v.key) || {}).value || "";
-    return body;
-  }
-  function setSaveStatus(text) { const s = $("saveStatus"); if (s) s.textContent = text; }
+  const setSaveStatus = t => { const s = $("saveStatus"); if (s) s.textContent = t; };
 
+  const timers = {}, inflight = {};
   function scheduleSave(id) {
-    const body = { ...readFields(), updatedAt: Date.now() };
-    writeLocal(id, { ...body, status: (state.mine[id] || {}).status || "draft" });
+    if (!working || working.id !== id) return;
+    working.updatedAt = Date.now();
+    store.set(localKey(id), { ...working.fields, status: (state.mine[id] || {}).status || "draft", updatedAt: working.updatedAt });
     setSaveStatus("بيتحفظ...");
-    clearTimeout(saveTimers[id]);
-    saveTimers[id] = setTimeout(() => saveDraft(id, null, false), 1800);
+    clearTimeout(timers[id]);
+    timers[id] = setTimeout(() => saveDraft(id, null, false), 1800);
   }
-
-  const writing = {};
   async function saveDraft(id, forceStatus, announce) {
-    clearTimeout(saveTimers[id]);
-    if (!state.db || !state.uid) { setSaveStatus("محفوظ على جهازك بس (مفيش اتصال بقاعدة البيانات)"); return false; }
-    if (writing[id]) { await writing[id]; }
+    clearTimeout(timers[id]);
+    if (!working || working.id !== id) return false;
+    if (!state.db || !state.uid) { setSaveStatus("محفوظ على جهازك بس، لحد ما الاتصال يرجع"); return false; }
+    if (inflight[id]) await inflight[id];
     const prev = state.mine[id] || {};
-    const body = { ...readFields(), status: forceStatus || prev.status || "draft", updatedAt: Date.now() };
-    if (forceStatus === "draft" && prev.status === "submitted") body.status = "submitted";
+    const body = { ...working.fields, status: forceStatus || prev.status || "draft", updatedAt: Date.now() };
     const p = state.db.doc(`subs/${state.uid}/tasks/${id}`).set(body);
-    writing[id] = p.catch(() => {});
-    try {
-      await p;
-      setSaveStatus("المسودة محفوظة");
-      if (announce) toast("اتحفظت المسودة");
-      return true;
-    } catch (e) {
+    inflight[id] = p.catch(() => {});
+    try { await p; setSaveStatus("المسودة محفوظة"); if (announce) toast("اتحفظت"); return true; }
+    catch (e) {
       setSaveStatus("الحفظ فشل، النص محفوظ على جهازك");
       if (e && e.code === "invalid_argument") { state.canWrite = false; notice("صلاحيتك على الصفحة دي قراءة بس. اطلب من صاحبها يخليك Contributor."); }
       return false;
-    } finally { writing[id] = null; }
+    } finally { inflight[id] = null; }
   }
-
   async function submit(id) {
     const card = BY_ID[id];
-    const fields = readFields();
-    const blocking = VARIANTS.filter(v => validate(v, fields[v.key], card).some(c => c.level === "bad"));
-    if (blocking.length) { toast("صلّح الحاجات اللي باللون الأحمر في: " + blocking.map(v => v.label).join("، ")); return; }
-    const ok = await saveDraft(id, "submitted", false);
-    if (!ok) return;
-    try {
-      await state.db.doc("claims/" + id).set({ uid: state.uid, status: "submitted", at: Date.now() });
-      toast("اتسلّم، شكراً!");
-    } catch { toast("النص اتحفظ بس حالة التاسك متحدثتش. جرّب تاني."); }
+    const broken = VARIANTS.filter(v => validate(v, working.fields[v.key], card).some(c => c.level === "bad"));
+    if (broken.length) { state.tab = broken[0].key; renderEditor(); toast("صلّح الحاجات الحمرا في: " + broken.map(v => v.label).join("، ")); return; }
+    if (!(await saveDraft(id, "submitted", false))) return;
+    try { await state.db.doc("claims/" + id).set({ uid: state.uid, status: "submitted", at: Date.now() }); toast("اتسلّم، شكراً!"); }
+    catch { toast("النص اتحفظ بس حالة التاسك متحدّثتش. جرّب تاني."); }
   }
-
   async function claimTask(id) {
     if (!state.db || !state.uid) return;
     const ref = state.db.doc("claims/" + id);
     try {
       const lease = await ref.acquire({ holder: state.uid, ttlMs: 5000 });
       if (!lease.acquired) { toast("حد تاني بيحجزه دلوقتي. جرّب بعد ثواني."); return; }
-      const snap = await ref.get();
-      const cur = snap.exists ? snap.data() : null;
+      const snap = await ref.get(), cur = snap.exists ? snap.data() : null;
       if (cur && cur.uid && cur.uid !== state.uid) { toast("التاسك ده اتحجز خلاص."); return; }
+      state.tab = "en";
       await ref.set({ uid: state.uid, status: "claimed", at: Date.now() });
-      toast("اتحجز. ابدأ اكتب.");
+      toast("اتحجز. ابدأ بالإنجليزي.");
     } catch (e) {
-      if (e && e.code === "invalid_argument") { state.canWrite = false; notice("صلاحيتك على الصفحة دي قراءة بس. اطلب من صاحبها يخليك Contributor."); renderDesk(); }
+      if (e && e.code === "invalid_argument") { state.canWrite = false; notice("صلاحيتك على الصفحة دي قراءة بس. اطلب من صاحبها يخليك Contributor."); renderEditor(); }
       else toast("الحجز فشل. جرّب تاني.");
     }
   }
-
   async function releaseTask(id) {
-    if (!state.db) return;
     try {
-      const snap = await state.db.doc("claims/" + id).get();
-      const cur = snap.exists ? snap.data() : null;
+      const snap = await state.db.doc("claims/" + id).get(), cur = snap.exists ? snap.data() : null;
       if (cur && cur.uid === state.uid && cur.status !== "submitted") await state.db.doc("claims/" + id).delete();
       toast("سيبت التاسك.");
     } catch { toast("مقدرتش أسيب التاسك. جرّب تاني."); }
   }
 
-  document.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => {
-    state.filter = b.dataset.filter;
-    document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
-    renderList();
-  }));
+  function select(id) {
+    if (!id || !BY_ID[id]) return;
+    if (state.selected !== id) { state.tab = "en"; working = null; }
+    state.selected = id;
+    store.set("dt-selected", id);
+    renderPicker(); renderBrief(); renderEditor();
+  }
+  function step(delta) {
+    const list = visibleTasks(), idx = list.findIndex(c => c.instance_id === state.selected);
+    const next = list[idx + delta]; if (next) select(next.instance_id);
+  }
+  $("taskSelect").addEventListener("change", e => select(e.target.value));
+  $("prevBtn").addEventListener("click", () => step(-1));
+  $("nextBtn").addEventListener("click", () => step(1));
+  $("filterSelect").addEventListener("change", e => {
+    state.filter = e.target.value;
+    const list = visibleTasks();
+    if (list.length && !list.some(c => c.instance_id === state.selected)) select(list[0].instance_id); else renderPicker();
+  });
 
-  renderList();
+  const editingNow = () => document.activeElement && document.activeElement.tagName === "TEXTAREA";
+  function refresh() {
+    renderPicker(); renderBrief();
+    if (!editingNow()) renderEditor();
+  }
+
+  const saved = store.get("dt-selected", null);
+  select(BY_ID[saved] ? saved : CARDS[0].instance_id);
 
   (async () => {
-    const loadTimer = setTimeout(() => { if (!state.dbReady) notice("مش قادر أوصل لقاعدة البيانات دلوقتي. تقدر تقرا التاسكات، والكتابة هتتحفظ على جهازك لحد ما الاتصال يرجع."); }, 10000);
+    const timer = setTimeout(() => { if (!state.dbReady) notice("مش قادر أوصل لقاعدة البيانات دلوقتي. تقدر تقرا التاسكات، والكتابة هتتحفظ على جهازك لحد ما الاتصال يرجع."); }, 10000);
     const [user, db] = await Promise.all([window.claude?.use?.("user") ?? null, window.claude?.use?.("db") ?? null]);
-    if (!db || !user) { clearTimeout(loadTimer); notice("افتح الصفحة وأنت مسجّل دخول عشان تحجز وتسلّم. تقدر تتصفح التاسكات دلوقتي."); return; }
+    if (!db || !user) { clearTimeout(timer); notice("افتح الصفحة وإنت مسجّل دخول عشان تحجز وتسلّم. تقدر تتصفح التاسكات دلوقتي."); return; }
     state.uid = await user.id();
     state.canWrite = await user.can("data.write");
-    if (!state.uid) { clearTimeout(loadTimer); notice("مقدرتش أعرف حسابك على الصفحة دي، فالحجز والحفظ مقفولين."); return; }
+    if (!state.uid) { clearTimeout(timer); notice("مقدرتش أعرف حسابك على الصفحة دي، فالحجز والحفظ مقفولين."); return; }
     if (state.canWrite === false) notice("صلاحيتك على الصفحة دي قراءة بس. اطلب من صاحبها يخليك Contributor عشان تكتب.");
     state.db = db;
     db.collection("claims").onSnapshot(snap => {
-      const next = {};
-      for (const d of snap.docs) next[d.id] = d.data();
+      const next = {}; for (const d of snap.docs) next[d.id] = d.data();
       state.claims = next;
-      if (!snap.metadata.fromCache) { state.dbReady = true; clearTimeout(loadTimer); if ($("notice").textContent.startsWith("مش قادر")) notice(""); }
-      renderList();
-      if (state.selected && !document.activeElement?.matches?.("textarea")) renderDesk();
-    }, () => { clearTimeout(loadTimer); notice("الاتصال بقاعدة البيانات اتقطع. اعمل refresh للصفحة."); });
+      if (!snap.metadata.fromCache && !state.dbReady) { state.dbReady = true; clearTimeout(timer); if ($("notice").textContent.startsWith("مش قادر")) notice(""); }
+      refresh();
+    }, () => { clearTimeout(timer); notice("الاتصال بقاعدة البيانات اتقطع. اعمل refresh للصفحة."); });
     db.collection(`subs/${state.uid}/tasks`).onSnapshot(snap => {
-      const next = {};
-      for (const d of snap.docs) next[d.id] = d.data();
+      const next = {}; for (const d of snap.docs) next[d.id] = d.data();
       state.mine = next;
-      renderList();
     }, () => {});
   })();
 })();

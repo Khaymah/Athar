@@ -35,5 +35,11 @@
       "text": "![image](https://quicklatex.com/cache3/bf/ql_936ffdb876e784206d4c54bb93d28dbf_l3.png)"
     }
   ],
-  "original_prose": "Incorrect parenthesizing of Subs\nHere is an example.\n[[A1]]\nLaTeX printing of this gives:  \n[[A2]]\n\n[[A3]]\n\n\nIt would be better to be parenthesized to:  \n[[A4]]\n\n[[A5]]"
+  "original_prose": "Incorrect parenthesizing of Subs\nHere is an example.\n[[A1]]\nLaTeX printing of this gives:  \n[[A2]]\n\n[[A3]]\n\n\nIt would be better to be parenthesized to:  \n[[A4]]\n\n[[A5]]",
+  "units_ar": [
+    "طباعة `Subs` بصيغة LaTeX لا تضع أقواسًا حول التعبير الداخلي عندما يكون مضروبًا في شيء آخر.",
+    "التعبير المستخدم كمثال موجود في [[A1]].",
+    "ناتج `latex` الحالي في [[A2]]، وصورته بعد العرض (rendering) في [[A3]].",
+    "الناتج المطلوب، حيث يُحاط التعبير الداخلي بـ `\\left(...\\right)`، موجود في [[A4]]، وصورته في [[A5]]."
+  ]
 }

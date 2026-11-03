@@ -21,5 +21,12 @@
       "text": "G = DihedralGroup(2*25)\n\nS2 = G.sylow_subgroup(p=2)"
     }
   ],
-  "original_prose": "sylow_subgroup() IndexError \nI use sympy 1.6.1, with numpy 1.18.5, scipy 1.4.1, under Python '3.8.5 (default, Aug  5 2020, 09:44:06) [MSC v.1916 64 bit (AMD64)]'. \n\nThe code that I run as the following gives IndexError for sylow_subgroup():\n\n[[A1]]\n\nThe same error shows up as well when I set: \n[[A2]]"
+  "original_prose": "sylow_subgroup() IndexError \nI use sympy 1.6.1, with numpy 1.18.5, scipy 1.4.1, under Python '3.8.5 (default, Aug  5 2020, 09:44:06) [MSC v.1916 64 bit (AMD64)]'. \n\nThe code that I run as the following gives IndexError for sylow_subgroup():\n\n[[A1]]\n\nThe same error shows up as well when I set: \n[[A2]]",
+  "units_ar": [
+    "الدالة `sylow_subgroup()` في `sympy.combinatorics` ترفع `IndexError` مع بعض زمر dihedral (dihedral groups).",
+    "خطوات إعادة الإنتاج والـ traceback في [[A1]]: `DihedralGroup(18)` مع `p=2`، والخطأ يحدث داخل `minimal_blocks()`.",
+    "نفس الخطأ يظهر مع الزمرة في [[A2]] (`DihedralGroup(2*25)` مع `p=2`).",
+    "المتوقع: أن تُرجع الدالة زمرة Sylow الجزئية (Sylow subgroup) دون أي خطأ.",
+    "بيئة التشغيل: sympy 1.6.1 وnumpy 1.18.5 وscipy 1.4.1 وPython 3.8.5 على Windows 64-bit."
+  ]
 }

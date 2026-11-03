@@ -26,5 +26,12 @@
       "text": "![3 4 3](https://user-images.githubusercontent.com/19758978/139711070-2859fd7a-70b2-449e-a3b0-d48e50184077.png)"
     }
   ],
-  "original_prose": "[Bug]: Datetime axis with usetex is unclear\n### Bug summary\n\nThe spacing for a datetime axis when using `usetex=True` is unclear in matplotlib version 3.4 when comparing it to 3.3.\n\n### Code for reproduction\n\n[[A1]]\n\n\n### Actual outcome\n\nExample of how it look in 3.3.4:\n[[A2]]\n\nExample of how it look in 3.4.3:\n[[A3]]\n\n### Expected outcome\n\nThe ideal case would be to have the spacing from version 3.3 in a tex format.\n\n### Operating system\n\nWindows\n\n### Matplotlib Version\n\n3.4.3\n\n### Matplotlib Backend\n\n_No response_\n\n### Python version\n\n_No response_\n\n### Jupyter version\n\n_No response_\n\n### Other libraries\n\n_No response_\n\n### Installation\n\nconda\n\n### Conda channel\n\nconda-forge"
+  "original_prose": "[Bug]: Datetime axis with usetex is unclear\n### Bug summary\n\nThe spacing for a datetime axis when using `usetex=True` is unclear in matplotlib version 3.4 when comparing it to 3.3.\n\n### Code for reproduction\n\n[[A1]]\n\n\n### Actual outcome\n\nExample of how it look in 3.3.4:\n[[A2]]\n\nExample of how it look in 3.4.3:\n[[A3]]\n\n### Expected outcome\n\nThe ideal case would be to have the spacing from version 3.3 in a tex format.\n\n### Operating system\n\nWindows\n\n### Matplotlib Version\n\n3.4.3\n\n### Matplotlib Backend\n\n_No response_\n\n### Python version\n\n_No response_\n\n### Jupyter version\n\n_No response_\n\n### Other libraries\n\n_No response_\n\n### Installation\n\nconda\n\n### Conda channel\n\nconda-forge",
+  "units_ar": [
+    "في محور التواريخ مع `usetex=True` تصبح المسافات بين تسميات الـ ticks غير واضحة في matplotlib 3.4 مقارنة بـ 3.3.",
+    "سكربت إعادة الإنتاج [[A1]] يفعّل `text.usetex`، ويرسم نطاق تواريخ pandas قصيرًا، ويحفظ صورة PNG باسم رقم الإصدار.",
+    "صور الناتج: الإصدار 3.3.4 في [[A2]]، والإصدار 3.4.3 في [[A3]].",
+    "المتوقع: الحصول على المسافات كما في 3.3، مع بقاء العرض بصيغة TeX.",
+    "البيئة: matplotlib 3.4.3 على Windows، مثبتة من conda-forge."
+  ]
 }

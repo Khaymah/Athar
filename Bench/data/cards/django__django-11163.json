@@ -20,5 +20,11 @@
       "text": "if fields is not None and f.name not in fields:"
     }
   ],
-  "original_prose": "model_to_dict() should return an empty dict for an empty list of fields.\nDescription\n\t\nBeen called as model_to_dict(instance, fields=[]) function should return empty dict, because no fields were requested. But it returns all fields\nThe problem point is\n[[A1]]\nwhich should be\n[[A2]]\nPR: ​https://github.com/django/django/pull/11150/files"
+  "original_prose": "model_to_dict() should return an empty dict for an empty list of fields.\nDescription\n\t\nBeen called as model_to_dict(instance, fields=[]) function should return empty dict, because no fields were requested. But it returns all fields\nThe problem point is\n[[A1]]\nwhich should be\n[[A2]]\nPR: ​https://github.com/django/django/pull/11150/files",
+  "units_ar": [
+    "استدعاء `model_to_dict(instance, fields=[])` يُرجع كل الحقول (fields).",
+    "المتوقع: قاموس (dict) فارغ، لأنه لم يُطلب أي حقل.",
+    "يشير الكاتب إلى الشرط [[A1]] على أنه سبب المشكلة، ويقول إنه يجب أن يصبح [[A2]].",
+    "طلب الدمج (PR) الذي قدّمه الكاتب: https://github.com/django/django/pull/11150/files"
+  ]
 }

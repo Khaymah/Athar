@@ -30,6 +30,7 @@ def build_page(template: Path, cards_dir: Path, task_ids: list[str], out: Path) 
                 "instance_id": card.instance_id,
                 "repo": card.repo,
                 "units": card.units,
+                "units_ar": card.units_ar if len(card.units_ar) == len(card.units) else [],
                 "attachments": [{"id": a.id, "kind": a.kind, "text": a.text} for a in card.attachments],
             }
         )

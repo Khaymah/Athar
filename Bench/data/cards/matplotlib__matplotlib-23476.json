@@ -26,5 +26,12 @@
       "text": "```\nMacOSX\nMatplotlib ver: 3.5.2\nPlatform: macOS-12.4-arm64-arm-64bit\nSystem: Darwin\nRelease: 21.5.0\nPython ver: 3.9.12\n0: 200.0\n1: 200.0\n2: 200.0\n3: 200.0\n4: 200.0\n5: 200.0\n6: 200.0\n7: 200.0\n8: 200.0\n9: 200.0\n10: 200.0\n11: 200.0\n12: 200.0\n13: 200.0\n14: 200.0\n15: 200.0\n16: 200.0\n17: 200.0\n18: 200.0\n19: 200.0\n20: 200.0\n21: 200.0\n22: 200.0\n```"
     }
   ],
-  "original_prose": "[Bug]: DPI of a figure is doubled after unpickling on M1 Mac\n### Bug summary\n\nWhen a figure is unpickled, it's dpi is doubled. This behaviour happens every time and if done in a loop it can cause an `OverflowError`.\n\n### Code for reproduction\n\n[[A1]]\n\n\n### Actual outcome\n\n[[A2]]\n\n### Expected outcome\n\n[[A3]]\n\n### Additional information\n\nThis seems to happen only on M1 MacBooks and the version of python doesn't matter.\n\n### Operating system\n\nOS/X\n\n### Matplotlib Version\n\n3.5.2\n\n### Matplotlib Backend\n\nMacOSX\n\n### Python version\n\n3.9.12\n\n### Jupyter version\n\n_No response_\n\n### Installation\n\npip"
+  "original_prose": "[Bug]: DPI of a figure is doubled after unpickling on M1 Mac\n### Bug summary\n\nWhen a figure is unpickled, it's dpi is doubled. This behaviour happens every time and if done in a loop it can cause an `OverflowError`.\n\n### Code for reproduction\n\n[[A1]]\n\n\n### Actual outcome\n\n[[A2]]\n\n### Expected outcome\n\n[[A3]]\n\n### Additional information\n\nThis seems to happen only on M1 MacBooks and the version of python doesn't matter.\n\n### Operating system\n\nOS/X\n\n### Matplotlib Version\n\n3.5.2\n\n### Matplotlib Backend\n\nMacOSX\n\n### Python version\n\n3.9.12\n\n### Jupyter version\n\n_No response_\n\n### Installation\n\npip",
+  "units_ar": [
+    "قيمة `dpi` للـ Figure تتضاعف في كل مرة يُعاد فيها تحميل الشكل بـ unpickle، مع backend MacOSX على جهاز Mac M1.",
+    "إعادة الإنتاج [[A1]]: عمل pickle ثم unpickle للشكل نفسه 32 مرة داخل حلقة مع طباعة `fig.dpi` كل مرة.",
+    "النتيجة الفعلية [[A2]]: الـ dpi يصبح 200 ثم 400 ثم 800 ... حتى يظهر `OverflowError: signed integer is greater than maximum` من `FigureCanvas.__init__` في `backend_macosx` عبر `Figure.__setstate__`.",
+    "المتوقع [[A3]]: أن تبقى قيمة dpi `200.0` بعد كل دورة حفظ وتحميل.",
+    "البيئة: matplotlib 3.5.2 على macOS 12.4 arm64؛ تحدث فقط على أجهزة MacBook M1، وإصدار Python لا يؤثر."
+  ]
 }

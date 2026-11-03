@@ -8,5 +8,10 @@
     "justification: empty set in extended reals, see https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers"
   ],
   "attachments": [],
-  "original_prose": "Zero-argument Min() and Max()\nRight now `Min()` and `Max()` with no arguments raise `ValueError: The Max/Min functions must have arguments.`. It might be mathematically more convenient to have them return `oo` and `-oo`, respectively. See https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers for why these are valid answers mathematically."
+  "original_prose": "Zero-argument Min() and Max()\nRight now `Min()` and `Max()` with no arguments raise `ValueError: The Max/Min functions must have arguments.`. It might be mathematically more convenient to have them return `oo` and `-oo`, respectively. See https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers for why these are valid answers mathematically.",
+  "units_ar": [
+    "حاليًا استدعاء `Min()` و`Max()` بدون أي وسائط (arguments) يرفع الخطأ `ValueError: The Max/Min functions must have arguments.`",
+    "الاقتراح: أن يُرجع `Min()` بدون وسائط القيمة `oo`، وأن يُرجع `Max()` بدون وسائط القيمة `-oo`.",
+    "المبرر: هذا يتوافق مع حالة المجموعة الخالية (empty set) في الأعداد الحقيقية الممتدة (extended reals)، انظر https://en.wikipedia.org/wiki/Empty_set#Extended_real_numbers"
+  ]
 }

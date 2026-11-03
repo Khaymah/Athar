@@ -31,5 +31,12 @@
       "text": "migrations.CreateModel(\n\tname='Thing',\n\tfields=[\n\t\t('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),\n\t\t('state', enumfields.fields.EnumField(enum=test1.models.State, max_length=10)),\n\t],\n),"
     }
   ],
-  "original_prose": "makemigrations produces incorrect path for inner classes\nDescription\n\t\nWhen you define a subclass from django.db.models.Field as an inner class of some other class, and use this field inside a django.db.models.Model class, then when you run manage.py makemigrations, a migrations file is created which refers to the inner class as if it were a top-level class of the module it is in.\nTo reproduce, create the following as your model:\n[[A1]]\nAfter running manage.py makemigrations, the generated migrations file contains the following:\n[[A2]]\nNote the test1.models.Inner, which should have been test1.models.Outer.Inner.\nThe real life case involved an EnumField from django-enumfields, defined as an inner class of a Django Model class, similar to this:\n[[A3]]\nThis results in the following migrations code:\n[[A4]]\nThis refers to test1.models.State, instead of to test1.models.Thing.State."
+  "original_prose": "makemigrations produces incorrect path for inner classes\nDescription\n\t\nWhen you define a subclass from django.db.models.Field as an inner class of some other class, and use this field inside a django.db.models.Model class, then when you run manage.py makemigrations, a migrations file is created which refers to the inner class as if it were a top-level class of the module it is in.\nTo reproduce, create the following as your model:\n[[A1]]\nAfter running manage.py makemigrations, the generated migrations file contains the following:\n[[A2]]\nNote the test1.models.Inner, which should have been test1.models.Outer.Inner.\nThe real life case involved an EnumField from django-enumfields, defined as an inner class of a Django Model class, similar to this:\n[[A3]]\nThis results in the following migrations code:\n[[A4]]\nThis refers to test1.models.State, instead of to test1.models.Thing.State.",
+  "units_ar": [
+    "الأمر `makemigrations` يكتب مسار import خاطئًا لصنف فرعي من `models.Field` مُعرَّف كصنف داخلي (inner class) داخل صنف آخر.",
+    "يُسلسَل (serialize) الصنف المتداخل كأنه صنف في المستوى الأعلى من الـ module الخاص به.",
+    "نماذج إعادة الإنتاج في [[A1]]، والـ migration الناتجة [[A2]] تستخدم `test1.models.Inner` بينما المتوقع `test1.models.Outer.Inner`.",
+    "حالة واقعية: `EnumField` من مكتبة django-enumfields مع `Enum` مُعرَّف داخل الموديل `Thing` كما في [[A3]].",
+    "الـ migration الخاصة بها [[A4]] تشير إلى `test1.models.State` بدلًا من `test1.models.Thing.State`."
+  ]
 }

@@ -27,7 +27,7 @@ object ZikrNotifications {
         )
     }
 
-    fun service(context: Context, phrase: Phrase?, stats: ZikrStats?, paused: Boolean): Notification {
+    fun service(context: Context, phrase: Phrase?, paused: Boolean): Notification {
         val title = when {
             paused -> "متوقف مؤقتاً"
             phrase != null -> phrase.text
@@ -41,7 +41,6 @@ object ZikrNotifications {
         return NotificationCompat.Builder(context, CHANNEL_SERVICE)
             .setSmallIcon(R.drawable.ic_stat_zikr)
             .setContentTitle(title)
-            .setContentText(stats?.let { "اليوم ${it.today} · الإجمالي ${it.total}" } ?: "")
             .setContentIntent(openApp(context, autostart = false))
             .setOngoing(true)
             .setOnlyAlertOnce(true)

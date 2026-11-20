@@ -1,7 +1,6 @@
 package com.khaymah.athar
 
 import android.content.Context
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -14,7 +13,6 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.time.LocalDate
 
 data class ZikrSettings(
     val intervalSeconds: Int,
@@ -26,8 +24,6 @@ data class ZikrSettings(
     val activePhrases: List<Phrase>
         get() = order.filter { it in enabled }.mapNotNull(Phrases::byId)
 }
-
-data class ZikrStats(val today: Int, val total: Int)
 
 private val Context.dataStore by preferencesDataStore(
     name = "athar",
@@ -47,11 +43,13 @@ class ZikrRepository(context: Context) {
         )
     }
 
-    val stats: Flow<ZikrStats> = store.data.map { p ->
-        ZikrStats(today = todayCountOf(p), total = p[Keys.total] ?: 0)
-    }
-
     val wasRunning: Flow<Boolean> = store.data.map { it[Keys.running] ?: false }
+
+    val autostartOpened: Flow<Boolean> = store.data.map { it[Keys.autostartOpened] ?: false }
+
+    suspend fun markAutostartOpened() {
+        store.edit { it[Keys.autostartOpened] = true }
+    }
 
     suspend fun setRunning(running: Boolean) {
         store.edit { it[Keys.running] = running }
@@ -87,16 +85,6 @@ class ZikrRepository(context: Context) {
         }
     }
 
-    suspend fun increment(): ZikrStats {
-        val p = store.edit { p: MutablePreferences ->
-            val today = todayCountOf(p)
-            p[Keys.date] = LocalDate.now().toString()
-            p[Keys.today] = today + 1
-            p[Keys.total] = (p[Keys.total] ?: 0) + 1
-        }
-        return ZikrStats(today = p[Keys.today] ?: 0, total = p[Keys.total] ?: 0)
-    }
-
     private fun orderOf(p: Preferences): List<String> {
         val saved = p[Keys.order]?.split(',')?.filter { Phrases.byId(it) != null }.orEmpty()
         return saved + Phrases.all.map { it.id }.filterNot { it in saved }
@@ -105,18 +93,13 @@ class ZikrRepository(context: Context) {
     private fun enabledOf(p: Preferences): Set<String> =
         p[Keys.enabled] ?: Phrases.all.map { it.id }.toSet()
 
-    private fun todayCountOf(p: Preferences): Int =
-        if (p[Keys.date] == LocalDate.now().toString()) p[Keys.today] ?: 0 else 0
-
     private object Keys {
         val interval = intPreferencesKey("interval_seconds")
         val order = stringPreferencesKey("order")
         val enabled = stringSetPreferencesKey("enabled")
         val shuffle = booleanPreferencesKey("shuffle")
         val volume = floatPreferencesKey("volume")
-        val date = stringPreferencesKey("today_date")
-        val today = intPreferencesKey("today_count")
-        val total = intPreferencesKey("total_count")
+        val autostartOpened = booleanPreferencesKey("autostart_opened")
         val running = booleanPreferencesKey("running")
     }
 

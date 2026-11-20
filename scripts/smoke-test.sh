@@ -5,7 +5,7 @@ PKG=com.khaymah.athar
 APK=app/build/outputs/apk/debug/app-debug.apk
 
 count() {
-  adb shell dumpsys notification --noredact | grep -o 'اليوم [0-9]*' | head -1 | grep -o '[0-9]*' || echo 0
+  adb logcat -d -s Athar:I | grep -c "played" || true
 }
 
 adb install -r "$APK"
@@ -31,4 +31,20 @@ services=$(adb shell dumpsys activity services "$PKG")
 grep -q "isForeground=true" <<<"$services"
 [ "$second" -gt "$first" ]
 [ $((second - first)) -ge 4 ]
+echo "doze check passed"
+
+adb shell dumpsys deviceidle unforce
+adb root >/dev/null
+adb wait-for-device
+pid=$(adb shell pidof "$PKG" | tr -d '\r')
+adb shell kill -9 "$pid"
+before=$(count)
+now=$before
+for _ in $(seq 1 30); do
+  sleep 5
+  now=$(count)
+  [ "$now" -gt "$before" ] && break
+done
+echo "count after process kill: $before -> $now"
+[ "$now" -gt "$before" ]
 echo "smoke test passed"

@@ -4,12 +4,22 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import androidx.core.net.toUri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 
 object Reliability {
+    fun notificationsEnabled(context: Context): Boolean =
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+    fun openNotificationSettings(context: Context) {
+        val direct = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        if (!launch(context, direct)) openAppDetails(context)
+    }
+
     fun isBatteryExempt(context: Context): Boolean =
         context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
 
@@ -19,27 +29,16 @@ object Reliability {
         if (!launch(context, direct)) launch(context, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
     }
 
+    fun needsAutostart(): Boolean = Build.MANUFACTURER.lowercase() in autostartManufacturers
+
     fun openAutostartSettings(context: Context) {
         val opened = autostartScreens.any { launch(context, Intent().setComponent(it)) }
-        if (!opened) {
-            launch(context, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri()))
-        }
+        if (!opened) openAppDetails(context)
     }
 
-    fun autostartHint(): String = when (Build.MANUFACTURER.lowercase()) {
-        "xiaomi", "redmi", "poco" ->
-            "الإعدادات ← التطبيقات ← أثر: فعّل «التشغيل التلقائي»، وخلّي «توفير البطارية» على «بلا قيود»."
-        "huawei", "honor" ->
-            "الإعدادات ← البطارية ← تشغيل التطبيقات ← أثر: اختار «إدارة يدوية» وفعّل الاختيارات الثلاثة."
-        "oppo", "realme", "oneplus" ->
-            "الإعدادات ← التطبيقات ← أثر ← استخدام البطارية: فعّل «السماح بالنشاط في الخلفية» و«التشغيل التلقائي»."
-        "vivo", "iqoo" ->
-            "الإعدادات ← البطارية ← استهلاك الطاقة في الخلفية ← أثر: اختار «السماح»، وفعّل التشغيل التلقائي."
-        "samsung" ->
-            "الإعدادات ← البطارية ← حدود الاستخدام في الخلفية ← التطبيقات غير النائمة أبداً: أضف أثر."
-        else ->
-            "الإعدادات ← التطبيقات ← أثر ← البطارية: اختار «بلا قيود»."
-    } + " وكمان اقفل التطبيق في قائمة التطبيقات الأخيرة (علامة القفل) عشان مايتقفلش لما تمسح الذاكرة."
+    private fun openAppDetails(context: Context) {
+        launch(context, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri()))
+    }
 
     private fun launch(context: Context, intent: Intent): Boolean = try {
         context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -47,6 +46,11 @@ object Reliability {
     } catch (e: Exception) {
         false
     }
+
+    private val autostartManufacturers = setOf(
+        "xiaomi", "redmi", "poco", "huawei", "honor", "oppo", "realme", "oneplus",
+        "vivo", "iqoo", "samsung", "asus", "letv", "leeco",
+    )
 
     private val autostartScreens = listOf(
         ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"),

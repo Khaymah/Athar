@@ -15,7 +15,9 @@ import androidx.compose.ui.unit.LayoutDirection
 
 class MainActivity : ComponentActivity() {
     private val notificationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { ZikrService.start(this) }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) Reliability.openNotificationSettings(this)
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +26,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             AtharTheme {
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                    AtharApp(repository = repository, onStart = ::requestStart)
+                    AtharApp(
+                        repository = repository,
+                        onStart = { ZikrService.start(this) },
+                        onRequestNotifications = ::requestNotifications,
+                    )
                 }
             }
         }
@@ -39,16 +45,16 @@ class MainActivity : ComponentActivity() {
     private fun handleAutostart(intent: Intent) {
         if (!intent.getBooleanExtra(EXTRA_AUTOSTART, false)) return
         intent.removeExtra(EXTRA_AUTOSTART)
-        requestStart()
+        ZikrService.start(this)
     }
 
-    private fun requestStart() {
-        val needsPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+    private fun requestNotifications() {
+        val canAsk = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        if (needsPermission) {
+        if (canAsk) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            ZikrService.start(this)
+            Reliability.openNotificationSettings(this)
         }
     }
 

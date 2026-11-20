@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -30,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,23 +51,24 @@ import kotlin.math.roundToInt
 
 private enum class Screen { Home, Settings }
 
+private data class PermissionItem(val title: String, val granted: Boolean, val onFix: () -> Unit)
+
 @Composable
 fun AtharTheme(content: @Composable () -> Unit) {
-    val green = Color(0xFF2E7D5B)
     val scheme = if (isSystemInDarkTheme()) {
         darkColorScheme(primary = Color(0xFF7FD1A8), secondary = Color(0xFF9CCFB6))
     } else {
-        lightColorScheme(primary = green, secondary = Color(0xFF4F7A66))
+        lightColorScheme(primary = Color(0xFF2E7D5B), secondary = Color(0xFF4F7A66))
     }
     MaterialTheme(colorScheme = scheme, content = content)
 }
 
 @Composable
-fun AtharApp(repository: ZikrRepository, onStart: () -> Unit) {
+fun AtharApp(repository: ZikrRepository, onStart: () -> Unit, onRequestNotifications: () -> Unit) {
     var screen by rememberSaveable { mutableStateOf(Screen.Home) }
     val settings by repository.settings.collectAsState(initial = null)
-    val stats by repository.stats.collectAsState(initial = ZikrStats(0, 0))
     val playback by ZikrService.state.collectAsState()
+    val permissions = rememberPermissions(repository, onRequestNotifications)
 
     BackHandler(enabled = screen == Screen.Settings) { screen = Screen.Home }
 
@@ -79,8 +82,34 @@ fun AtharApp(repository: ZikrRepository, onStart: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             when (screen) {
-                Screen.Home -> HomeScreen(current, stats, playback, onStart) { screen = Screen.Settings }
-                Screen.Settings -> SettingsScreen(current, repository) { screen = Screen.Home }
+                Screen.Home -> HomeScreen(current, playback, permissions, onStart) { screen = Screen.Settings }
+                Screen.Settings -> SettingsScreen(current, permissions, repository) { screen = Screen.Home }
+            }
+        }
+    }
+}
+
+@Composable
+private fun rememberPermissions(repository: ZikrRepository, onRequestNotifications: () -> Unit): List<PermissionItem> {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val autostartOpened by repository.autostartOpened.collectAsState(initial = false)
+    var refresh by remember { mutableIntStateOf(0) }
+    LifecycleResumeEffect(Unit) {
+        refresh++
+        onPauseOrDispose { }
+    }
+    return remember(refresh, autostartOpened) {
+        buildList {
+            add(PermissionItem("الإشعارات", Reliability.notificationsEnabled(context), onRequestNotifications))
+            add(PermissionItem("العمل بدون قيود البطارية", Reliability.isBatteryExempt(context)) {
+                Reliability.requestBatteryExemption(context)
+            })
+            if (Reliability.needsAutostart()) {
+                add(PermissionItem("التشغيل التلقائي في الخلفية", autostartOpened) {
+                    Reliability.openAutostartSettings(context)
+                    scope.launch { repository.markAutostartOpened() }
+                })
             }
         }
     }
@@ -89,37 +118,34 @@ fun AtharApp(repository: ZikrRepository, onStart: () -> Unit) {
 @Composable
 private fun HomeScreen(
     settings: ZikrSettings,
-    stats: ZikrStats,
     playback: PlaybackState,
+    permissions: List<PermissionItem>,
     onStart: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val context = LocalContext.current
-    var batteryExempt by remember { mutableStateOf(Reliability.isBatteryExempt(context)) }
-    LifecycleResumeEffect(Unit) {
-        batteryExempt = Reliability.isBatteryExempt(context)
-        onPauseOrDispose { }
-    }
 
     Text("أثر", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
 
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            val text = playback.currentId?.let(Phrases::byId)?.text ?: "سُبْحَانَ اللَّهِ"
-            Text(text, fontSize = 30.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
-            Text("اليوم ${stats.today} · الإجمالي ${stats.total}", style = MaterialTheme.typography.bodyLarge)
-            Text("كل ${settings.intervalSeconds} ثانية", style = MaterialTheme.typography.bodyMedium)
+        val status = when (playback.status) {
+            PlaybackStatus.Playing -> "شغّال · كل ${settings.intervalSeconds} ثانية"
+            PlaybackStatus.Paused -> "متوقف مؤقتاً"
+            PlaybackStatus.Stopped -> "متوقف"
         }
+        Text(
+            status,
+            modifier = Modifier.fillMaxWidth().padding(28.dp),
+            fontSize = 24.sp,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 
     val hasPhrases = settings.activePhrases.isNotEmpty()
     when (playback.status) {
         PlaybackStatus.Stopped -> Button(onClick = onStart, enabled = hasPhrases, modifier = Modifier.fillMaxWidth()) {
-            Text(if (hasPhrases) "ابدأ" else "اختار عبارة واحدة على الأقل من الإعدادات")
+            Text(if (hasPhrases) "تشغيل" else "اختار عبارة واحدة على الأقل من الإعدادات")
         }
         PlaybackStatus.Playing, PlaybackStatus.Paused -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             val paused = playback.status == PlaybackStatus.Paused
@@ -131,28 +157,36 @@ private fun HomeScreen(
         }
     }
 
-    OutlinedButton(onClick = onOpenSettings, modifier = Modifier.fillMaxWidth()) { Text("الإعدادات") }
-
-    if (!batteryExempt) {
+    val missing = permissions.filterNot { it.granted }
+    if (missing.isNotEmpty()) {
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("النظام ممكن يوقف التسبيح عشان يوفّر البطارية.", fontWeight = FontWeight.Bold)
-                Button(onClick = { Reliability.requestBatteryExemption(context) }) { Text("اسمح بالعمل بدون قيود") }
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("صلاحيات ناقصة عشان التطبيق مايتقفلش", fontWeight = FontWeight.Bold)
+                missing.forEach { PermissionRow(it) }
             }
         }
     }
 
-    Card {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("عشان مايتقفلش أبداً", fontWeight = FontWeight.Bold)
-            Text(Reliability.autostartHint(), style = MaterialTheme.typography.bodyMedium)
-            TextButton(onClick = { Reliability.openAutostartSettings(context) }) { Text("افتح الإعدادات") }
-        }
+    OutlinedButton(onClick = onOpenSettings, modifier = Modifier.fillMaxWidth()) { Text("الإعدادات") }
+}
+
+@Composable
+private fun PermissionRow(item: PermissionItem) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(if (item.granted) "✓" else "✗", color = if (item.granted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+        Spacer(Modifier.width(8.dp))
+        Text(item.title, modifier = Modifier.weight(1f))
+        TextButton(onClick = item.onFix) { Text(if (item.granted) "فتح" else "اسمح") }
     }
 }
 
 @Composable
-private fun SettingsScreen(settings: ZikrSettings, repository: ZikrRepository, onBack: () -> Unit) {
+private fun SettingsScreen(
+    settings: ZikrSettings,
+    permissions: List<PermissionItem>,
+    repository: ZikrRepository,
+    onBack: () -> Unit,
+) {
     val scope = rememberCoroutineScope()
     var interval by remember(settings.intervalSeconds) { mutableFloatStateOf(settings.intervalSeconds.toFloat()) }
     var volume by remember(settings.volume) { mutableFloatStateOf(settings.volume) }
@@ -195,4 +229,8 @@ private fun SettingsScreen(settings: ZikrSettings, repository: ZikrRepository, o
             TextButton(onClick = { scope.launch { repository.move(id, 1) } }, enabled = index < settings.order.lastIndex) { Text("▼") }
         }
     }
+
+    HorizontalDivider()
+    Text("الصلاحيات", fontWeight = FontWeight.Bold)
+    permissions.forEach { PermissionRow(it) }
 }

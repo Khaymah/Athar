@@ -70,4 +70,4 @@ README.md · SOURCES.md
 - [x] battery exemption + KillerGuide + BootReceiver
 - [x] توليد وتنظيف الصوت + SOURCES.md
 - [x] android.yml + README (التثبيت والتوقيع)
-- [ ] أول run على CI: smoke test على emulator (الشاشة مقفولة + Doze) + build
+- [x] أول run على CI: smoke test على emulator (الشاشة مقفولة + Doze) + build

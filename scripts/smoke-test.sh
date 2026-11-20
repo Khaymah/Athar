@@ -13,6 +13,12 @@ adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS
 adb shell am start -n "$PKG/.MainActivity" --ez autostart true
 sleep 15
 
+if adb shell dumpsys notification --noredact | grep -q "تحديث أثر متاح"; then
+  echo "update check passed: newer release detected"
+else
+  echo "::warning::update notification not found (GitHub API unreachable or rate limited?)"
+fi
+
 adb shell input keyevent KEYCODE_HOME
 adb shell input keyevent KEYCODE_SLEEP
 adb shell dumpsys battery unplug

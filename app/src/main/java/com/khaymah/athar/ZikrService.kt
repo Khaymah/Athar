@@ -49,6 +49,12 @@ class ZikrService : Service() {
         repository = ZikrRepository(this)
         audio = ZikrAudio(this)
         ZikrNotifications.ensureChannels(this)
+        scope.launch {
+            while (isActive) {
+                runCatching { Updater.check(this@ZikrService) }
+                delay(UPDATE_POLL_MS)
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -224,6 +230,7 @@ class ZikrService : Service() {
         private const val MIN_GAP_MS = 500L
         private const val RETRY_DELAY_MS = 5_000L
         private const val WATCHDOG_MS = 60_000L
+        private const val UPDATE_POLL_MS = 6 * 60 * 60 * 1000L
         private const val TASK_REMOVED_RESTART_MS = 1_000L
         private const val LOG_TAG = "Athar"
 

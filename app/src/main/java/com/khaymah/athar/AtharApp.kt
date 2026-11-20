@@ -167,7 +167,28 @@ private fun HomeScreen(
         }
     }
 
+    UpdateCard()
+
     OutlinedButton(onClick = onOpenSettings, modifier = Modifier.fillMaxWidth()) { Text("الإعدادات") }
+}
+
+@Composable
+private fun UpdateCard() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val release by Updater.available.collectAsState()
+    val status by Updater.status.collectAsState()
+    val available = release ?: return
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("تحديث متاح: ${available.tag}", fontWeight = FontWeight.Bold)
+            if (status == UpdateStatus.Failed) Text("التحديث فشل، جرّب تاني.", color = MaterialTheme.colorScheme.error)
+            Button(
+                onClick = { scope.launch { Updater.install(context) } },
+                enabled = status != UpdateStatus.Downloading,
+            ) { Text(if (status == UpdateStatus.Downloading) "جاري التنزيل…" else "تحديث") }
+        }
+    }
 }
 
 @Composable

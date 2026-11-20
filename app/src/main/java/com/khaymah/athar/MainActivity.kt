@@ -12,6 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val notificationPermission =
@@ -35,6 +37,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         handleAutostart(intent)
+        lifecycleScope.launch { Updater.check(this@MainActivity) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -43,6 +46,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleAutostart(intent: Intent) {
+        if (intent.getBooleanExtra(EXTRA_INSTALL_UPDATE, false)) {
+            intent.removeExtra(EXTRA_INSTALL_UPDATE)
+            lifecycleScope.launch { Updater.install(this@MainActivity) }
+        }
         if (!intent.getBooleanExtra(EXTRA_AUTOSTART, false)) return
         intent.removeExtra(EXTRA_AUTOSTART)
         ZikrService.start(this)
@@ -60,5 +67,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_AUTOSTART = "autostart"
+        const val EXTRA_INSTALL_UPDATE = "install_update"
     }
 }

@@ -44,13 +44,9 @@ ffmpeg -i input.mp3 -af "silenceremove=start_periods=1:start_threshold=-45dB,are
 ```
 
 ## إصدار نسخة جديدة
-```bash
-git tag v0.1.0
-```
-```bash
-git push origin v0.1.0
-```
-الـ workflow بيشغّل الاختبارات والـ emulator، وبعدها بيبني APK موقّع وبيرفعه على Releases.
+من **Actions ← Android ← Run workflow** اكتب رقم النسخة (زي `v0.4.0`) واضغط Run. أو اعمل push لـ tag بنفس الاسم.
+
+الـ CI بيشغّل الاختبارات والـ emulator الأول، وبعدها بيبني APK موقّع. الـ Release مش بتتنشر غير لو كل الخطوات اللي قبلها نجحت.
 
 ## التوقيع (مرة واحدة)
 النسخ الجديدة مش هتتثبّت فوق القديمة غير لو كلها متوقّعة بنفس المفتاح، فاحتفظ بنسخة احتياطي من الـ keystore.

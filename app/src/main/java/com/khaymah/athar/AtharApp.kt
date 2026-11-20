@@ -20,6 +20,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -238,6 +239,24 @@ private fun SettingsScreen(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text("ترتيب عشوائي", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
         Switch(checked = settings.shuffle, onCheckedChange = { scope.launch { repository.setShuffle(it) } })
+    }
+
+    Text("الصوت", fontWeight = FontWeight.Bold)
+    Voices.all.forEach { voice ->
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(
+                selected = voice.id == settings.voice.id,
+                onClick = { scope.launch { repository.setVoice(voice.id) } },
+            )
+            Text(voice.name, modifier = Modifier.weight(1f))
+        }
+    }
+    val fallback = Phrases.all.filterNot(settings.voice::covers)
+    if (fallback.isNotEmpty()) {
+        Text(
+            "بصوت ${Voices.sabry.name}: " + fallback.joinToString("، ") { it.text },
+            style = MaterialTheme.typography.bodySmall,
+        )
     }
 
     Text("العبارات", fontWeight = FontWeight.Bold)

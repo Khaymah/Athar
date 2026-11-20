@@ -20,6 +20,7 @@ data class ZikrSettings(
     val enabled: Set<String>,
     val shuffle: Boolean,
     val volume: Float,
+    val voice: Voice = Voices.sabry,
 ) {
     val activePhrases: List<Phrase>
         get() = order.filter { it in enabled }.mapNotNull(Phrases::byId)
@@ -40,6 +41,7 @@ class ZikrRepository(context: Context) {
             enabled = enabledOf(p),
             shuffle = p[Keys.shuffle] ?: false,
             volume = p[Keys.volume] ?: 1f,
+            voice = Voices.byId(p[Keys.voice]),
         )
     }
 
@@ -53,6 +55,10 @@ class ZikrRepository(context: Context) {
 
     suspend fun setRunning(running: Boolean) {
         store.edit { it[Keys.running] = running }
+    }
+
+    suspend fun setVoice(id: String) {
+        store.edit { it[Keys.voice] = id }
     }
 
     suspend fun setInterval(seconds: Int) {
@@ -99,6 +105,7 @@ class ZikrRepository(context: Context) {
         val enabled = stringSetPreferencesKey("enabled")
         val shuffle = booleanPreferencesKey("shuffle")
         val volume = floatPreferencesKey("volume")
+        val voice = stringPreferencesKey("voice")
         val autostartOpened = booleanPreferencesKey("autostart_opened")
         val running = booleanPreferencesKey("running")
     }

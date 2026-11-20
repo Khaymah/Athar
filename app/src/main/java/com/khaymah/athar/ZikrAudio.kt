@@ -27,10 +27,11 @@ class ZikrAudio(context: Context) {
         .setAudioAttributes(attributes)
         .build()
 
-    private val soundIds = mutableMapOf<String, Int>()
-    private val durations = mutableMapOf<String, Long>()
+    private val allSounds = Voices.all.flatMap { voice -> Phrases.all.map(voice::soundFor) }.distinct()
+    private val soundIds = mutableMapOf<Int, Int>()
+    private val durations = mutableMapOf<Int, Long>()
     private val loaded = CompletableDeferred<Unit>()
-    private var pending = Phrases.all.size
+    private var pending = allSounds.size
     private var currentStream = 0
 
     init {
@@ -38,19 +39,19 @@ class ZikrAudio(context: Context) {
             pending--
             if (pending == 0) loaded.complete(Unit)
         }
-        Phrases.all.forEach { phrase ->
-            soundIds[phrase.id] = pool.load(appContext, phrase.sound, 1)
-            durations[phrase.id] = measure(phrase.sound)
+        allSounds.forEach { sound ->
+            soundIds[sound] = pool.load(appContext, sound, 1)
+            durations[sound] = measure(sound)
         }
     }
 
     suspend fun awaitLoaded() = loaded.await()
 
-    fun durationMs(phrase: Phrase): Long = durations[phrase.id] ?: DEFAULT_DURATION_MS
+    fun durationMs(@RawRes sound: Int): Long = durations[sound] ?: DEFAULT_DURATION_MS
 
-    fun play(phrase: Phrase, volume: Float): Boolean {
+    fun play(@RawRes sound: Int, volume: Float): Boolean {
         if (isInCall()) return false
-        val id = soundIds[phrase.id] ?: return false
+        val id = soundIds[sound] ?: return false
         if (audioManager.requestAudioFocus(focusRequest) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) return false
         currentStream = pool.play(id, volume, volume, 1, 0, 1f)
         return currentStream != 0

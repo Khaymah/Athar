@@ -241,20 +241,22 @@ private fun SettingsScreen(
         Switch(checked = settings.shuffle, onCheckedChange = { scope.launch { repository.setShuffle(it) } })
     }
 
+    val context = LocalContext.current
+    val selectedVoice = Voices.find(context, settings.voiceName)
     Text("الصوت", fontWeight = FontWeight.Bold)
-    Voices.all.forEach { voice ->
+    Voices.all(context).forEach { voice ->
         Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButton(
-                selected = voice.id == settings.voice.id,
-                onClick = { scope.launch { repository.setVoice(voice.id) } },
+                selected = voice.name == selectedVoice.name,
+                onClick = { scope.launch { repository.setVoice(voice.name) } },
             )
             Text(voice.name, modifier = Modifier.weight(1f))
         }
     }
-    val fallback = Phrases.all.filterNot(settings.voice::covers)
+    val fallback = Phrases.all.filterNot(selectedVoice::covers)
     if (fallback.isNotEmpty()) {
         Text(
-            "بصوت ${Voices.sabry.name}: " + fallback.joinToString("، ") { it.text },
+            "بصوت ${Voices.DEFAULT}: " + fallback.joinToString("، ") { it.text },
             style = MaterialTheme.typography.bodySmall,
         )
     }

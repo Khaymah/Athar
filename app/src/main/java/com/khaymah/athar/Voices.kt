@@ -1,33 +1,46 @@
 package com.khaymah.athar
 
-import androidx.annotation.RawRes
+import android.content.Context
 
-data class Voice(val id: String, val name: String, private val sounds: Map<String, Int>) {
-    @RawRes
-    fun soundFor(phrase: Phrase): Int = sounds[phrase.id] ?: phrase.sound
+data class Voice(val name: String, val clips: Set<String>) {
+    fun covers(phrase: Phrase): Boolean = phrase.id in clips
 
-    fun covers(phrase: Phrase): Boolean = sounds.isEmpty() || phrase.id in sounds
+    fun clipFor(phrase: Phrase): String =
+        Voices.clipPath(if (covers(phrase)) name else Voices.DEFAULT, phrase)
 }
 
 object Voices {
-    val sabry = Voice("sabry", "Sabry Dawood", emptyMap())
+    const val DEFAULT = "Sabry Dawood"
+    private const val ROOT = "voices"
+    private const val EXTENSION = ".ogg"
+    private val legacyIds = mapOf("sabry" to DEFAULT, "hummada" to "Mohammad Alhummada")
 
-    val hummada = Voice(
-        "hummada",
-        "Mohammad Alhummada",
-        mapOf(
-            "subhanallah" to R.raw.hummada_subhanallah,
-            "alhamdulillah" to R.raw.hummada_alhamdulillah,
-            "lailaha_illallah" to R.raw.hummada_lailaha_illallah,
-            "allahu_akbar" to R.raw.hummada_allahu_akbar,
-            "astaghfirullah" to R.raw.hummada_astaghfirullah,
-            "subhanallah_wabihamdih" to R.raw.hummada_subhanallah_wabihamdih,
-            "subhanallah_alazim" to R.raw.hummada_subhanallah_alazim,
-            "salawat" to R.raw.hummada_salawat,
-        ),
-    )
+    @Volatile
+    private var cache: List<Voice>? = null
 
-    val all = listOf(sabry, hummada)
+    fun all(context: Context): List<Voice> = cache ?: load(context).also { cache = it }
 
-    fun byId(id: String?): Voice = all.firstOrNull { it.id == id } ?: sabry
+    fun find(context: Context, name: String?): Voice {
+        val voices = all(context)
+        val wanted = resolve(name)
+        return voices.firstOrNull { it.name == wanted } ?: voices.first { it.name == DEFAULT }
+    }
+
+    fun resolve(name: String?): String = legacyIds[name] ?: name ?: DEFAULT
+
+    fun clipPath(voiceName: String, phrase: Phrase): String = "$ROOT/$voiceName/${phrase.id}$EXTENSION"
+
+    fun sortDefaultFirst(names: List<String>): List<String> =
+        names.sortedWith(compareBy<String> { it != DEFAULT }.thenBy { it })
+
+    private fun load(context: Context): List<Voice> {
+        val assets = context.applicationContext.assets
+        return sortDefaultFirst(assets.list(ROOT).orEmpty().toList()).map { name ->
+            val clips = assets.list("$ROOT/$name").orEmpty()
+                .filter { it.endsWith(EXTENSION) }
+                .map { it.removeSuffix(EXTENSION) }
+                .toSet()
+            Voice(name, clips)
+        }
+    }
 }

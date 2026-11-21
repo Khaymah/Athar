@@ -25,15 +25,18 @@
 
 الـ CI بيختبر ده على emulator: بيقفل الشاشة، ويدخّل الجهاز Doze بالعافية، ويتأكد إن الذكر لسه بيشتغل. وكمان بيقتل الـ process بـ `kill -9` ويتأكد إنه رجع لوحده.
 
-## تغيير الأصوات
-فيه صوتين تقدر تختار بينهم من **الإعدادات ← الصوت**:
-- **Sabry Dawood**: الصوت الافتراضي، وفيه كل العبارات.
-- **Mohammad Alhummada**: ملفاته في `hummada_*.ogg`. أي عبارة مالهاش تسجيل بصوته بتتقري بصوت Sabry Dawood.
+## الأصوات
+كل صوت ليه فولدر باسم صاحبه جوه `app/src/main/assets/voices/`:
 
-عشان تضيف صوت جديد: حط الملفات في `res/raw/` ببادئة جديدة، وسجّل الصوت في `Voices.kt`.
+```
+voices/
+├── Sabry Dawood/          (الافتراضي، ولازم يكون فيه كل العبارات)
+└── Mohammad Alhummada/
+```
 
-ملفات الصوت الافتراضي:
-كل عبارة ليها ملف في `app/src/main/res/raw/`:
+بتختار الصوت من **الإعدادات ← الصوت**. أي عبارة مالهاش ملف في فولدر الصوت اللي اخترته، بتتقري بصوت Sabry Dawood.
+
+**عشان تضيف صوت جديد:** اعمل فولدر جديد باسم صاحب الصوت، وحط فيه الملفات بالأسماء دي، واعمل release. التطبيق بيقرا الفولدرات لوحده، من غير ما تغيّر أي كود.
 
 | الملف | العبارة |
 |-------|---------|
@@ -47,11 +50,13 @@
 | `hawqala.ogg` | لا حول ولا قوة إلا بالله |
 | `salawat.ogg` | اللهم صلِّ على محمد |
 
-استبدل الملف بنفس الاسم وحدّث `SOURCES.md`. التحويل من أي صيغة:
+التحويل من أي صيغة:
 
 ```bash
-ffmpeg -i input.mp3 -af "silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,loudnorm=I=-16:TP=-1.5" -ar 44100 -ac 1 -c:a libvorbis -q:a 5 subhanallah.ogg
+ffmpeg -i input.mp3 -af "silenceremove=start_periods=1:start_threshold=-50dB,areverse,silenceremove=start_periods=1:start_threshold=-50dB,areverse,loudnorm=I=-16:TP=-1.5" -ar 44100 -ac 1 -c:a libvorbis -q:a 5 subhanallah.ogg
 ```
+
+وحدّث `SOURCES.md` بالمصدر.
 
 ## إصدار نسخة جديدة
 من **Actions ← Android ← Run workflow** اكتب رقم النسخة (زي `v0.4.0`) واضغط Run. أو اعمل push لـ tag بنفس الاسم.

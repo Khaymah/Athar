@@ -151,9 +151,9 @@ class ZikrService : Service() {
             return
         }
         val phrase = if (settings.shuffle) pickRandom(phrases) else phrases[index++ % phrases.size]
-        val sound = settings.voice.soundFor(phrase)
-        val clipMs = audio.durationMs(sound)
-        if (audio.play(sound, settings.volume)) {
+        val clip = Voices.find(this, settings.voiceName).clipFor(phrase)
+        val clipMs = audio.durationMs(clip)
+        if (audio.play(clip, settings.volume)) {
             lastPhrase = phrase
             mutableState.value = PlaybackState(PlaybackStatus.Playing, phrase.id)
             Log.i(LOG_TAG, "played ${phrase.id}")
